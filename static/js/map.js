@@ -1,28 +1,27 @@
-let markers = []; // Tüm marker'ları takip etmek için global dizi
-let currentInfoWindow = null; // Açık olan info window'u takip etmek için
+let markers = []; // Bunu tutuyoruz çünkü aktif kullanılıyor
+let currentInfoWindow = null; // Bunu tutuyoruz çünkü info window yönetimi için gerekli
 let map;
 let directionsRenderer;
 let searchBox1;
 let searchBox2;
-const elazigCenter = { lat: 38.6748, lng: 39.2225 }; // Elazığ merkez koordinatları
-let clickedLocationMarker = null; // Tıklanan konumu takip etmek için
-let chargingStationsVisible = false; // Şarj istasyonlarının görünürlüğünü takip etmek için
-let userLocationMarker = null; // Kullanıcı konumu için marker
-let trafficVisible = false; // Trafik görünümünü takip etmek için
+const elazigCenter = { lat: 38.6748, lng: 39.2225 };
+let clickedLocationMarker = null;
+let chargingStationsVisible = false;
+let userLocationMarker = null;
+let trafficVisible = false;
 let trafficLayer = null;
 let originalRoute = null;
 let trafficPolylines = [];
 let chargingStationMarkers = []; // Şarj istasyonu marker'larını takip etmek için
 
+// Projede şu anda kullanılan fonksiyonlar
 function initMap() {
     try {
-        // Google Maps nesnesinin varlığını kontrol et
         if (typeof google === 'undefined' || !google.maps) {
             console.error('Google Maps API yüklenemedi');
             return;
         }
 
-        // Harita seçeneklerini ayarla
         const mapOptions = {
             center: elazigCenter,
             zoom: 14,
@@ -43,10 +42,8 @@ function initMap() {
             fullscreenControl: true
         };
 
-        // Haritayı oluştur
         map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
-        // Arama kutularını başlat
         searchBox1 = new google.maps.places.Autocomplete(
             document.getElementById('searchBox1'),
             { componentRestrictions: { country: 'tr' } }
@@ -57,13 +54,12 @@ function initMap() {
             { componentRestrictions: { country: 'tr' } }
         );
 
-        // DirectionsRenderer'ı başlat
         directionsRenderer = new google.maps.DirectionsRenderer({
             map: map,
             panel: document.getElementById('directionsPanel')
         });
 
-        // Event listener'ları ekle
+        // Event listener'ları güncelle - gereksiz olanları kaldır
         const routeButton = document.getElementById('routeButton');
         const clearButton = document.getElementById('clearButton');
         const trafficButton = document.getElementById('trafficButton');
@@ -72,18 +68,18 @@ function initMap() {
         if (routeButton) routeButton.addEventListener('click', calculateRoute);
         if (clearButton) clearButton.addEventListener('click', clearMap);
         if (trafficButton) trafficButton.addEventListener('click', toggleTraffic);
-        if (toggleChargingStationsButton) toggleChargingStationsButton.addEventListener('click', showChargingStationsOnRoute);
+        if (toggleChargingStationsButton) {
+            toggleChargingStationsButton.addEventListener('click', showChargingStationsOnRoute);
+        }
 
         // Harita tıklama olayını ekle
         google.maps.event.addListener(map, 'click', function(event) {
             const clickedLocation = event.latLng;
             
-            // Önceki tıklanan konum marker'ını temizle
             if (clickedLocationMarker) {
                 clickedLocationMarker.setMap(null);
             }
             
-            // Yeni tıklanan konumu işaretle
             clickedLocationMarker = new google.maps.Marker({
                 position: clickedLocation,
                 map: map,
@@ -92,7 +88,6 @@ function initMap() {
                 }
             });
 
-            // Başlangıç noktası olarak searchBox1'e ekle
             const geocoder = new google.maps.Geocoder();
             geocoder.geocode({ location: clickedLocation }, (results, status) => {
                 if (status === 'OK' && results[0]) {
@@ -100,21 +95,18 @@ function initMap() {
                 }
             });
 
-            // Yakındaki şarj istasyonlarını ara
             searchNearbyChargingStations({
                 lat: clickedLocation.lat(),
                 lng: clickedLocation.lng()
             });
         });
 
-        // Konumu Al butonu için event listener ekle
         const getLocationButton = document.getElementById('getLocationButton');
         if (getLocationButton) {
             getLocationButton.addEventListener('click', getUserLocation);
         }
 
         console.log('Harita başarıyla başlatıldı ve event listener\'lar eklendi');
-
     } catch (error) {
         console.error('Harita başlatma hatası:', error);
     }
@@ -483,28 +475,74 @@ function calculateRoute() {
 // Yeni fonksiyonlar ekle
 async function checkRouteViability(route) {
     try {
-        // URL'i güncelle
-        const carInfo = await fetch('/harita/get-user-car-info/').then(res => res.json());
-        const batteryLevel = await getBatteryLevel();
+        // Araç bilgilerini ve şarj seviyesini al
+        const carInfoResponse = await fetch('/harita/get-user-car-info/');
+        const carInfo = await carInfoResponse.json();
+        const batteryLevel = parseInt(document.getElementById('batteryLevel').value) || 100;
         
         const leg = route.routes[0].legs[0];
-        const totalDistance = leg.distance.value / 1000;
+        const totalDistance = leg.distance.value / 1000; // metre -> km
         
-        const trafficImpact = await calculateTrafficImpact(leg);
-        const weatherImpact = await calculateWeatherImpact(leg);
+        // Araç menzili hesapla
+        const maxRange = carInfo.average_range || 350;
+        const actualRange = (maxRange * batteryLevel) / 100;
         
-        const baseRange = carInfo.average_range;
-        const actualRange = baseRange * (batteryLevel / 100) * trafficImpact * weatherImpact;
+        // Trafik durumunu kontrol et ve menzile etkisini hesapla
+        let trafficImpact = 1.0;
         
-        //ota boyunca menzil ve şarj durumu takibi
-        //let currentDistance = 0;
-        //const requiredStops = [];
+        if (leg.duration_in_traffic && leg.duration) {
+            const trafficRatio = leg.duration_in_traffic.value / leg.duration.value;
+            
+            // Trafik yoğunluğuna göre menzil etkisi:
+            if (trafficRatio > 1.8) trafficImpact = 0.7;  // %30 azalma
+            else if (trafficRatio > 1.5) trafficImpact = 0.8;  // %20 azalma
+            else if (trafficRatio > 1.2) trafficImpact = 0.9;  // %10 azalma
+            else if (trafficRatio > 1.0) trafficImpact = 0.95; // %5 azalma
+            
+            console.log(`Trafik durumu: Oran = ${trafficRatio.toFixed(2)}, Menzil etkisi = ${trafficImpact.toFixed(2)}`);
+        }
         
-        if (totalDistance <= actualRange) {
-            return { viable: true, remainingRange: actualRange - totalDistance };
+        // Hava durumu etkisini hesapla
+        const weatherData = await getWeatherData(leg.start_location);
+        let weatherImpact = 1.0;
+        
+        if (weatherData && weatherData.weather && weatherData.weather[0]) {
+            // Sıcaklık etkisi:
+            const temp = weatherData.main?.temp - 273.15; // Kelvin'den Celsius'a
+            if (temp < 0) weatherImpact *= 0.8;  // Soğuk havada %20 azalma
+            else if (temp > 35) weatherImpact *= 0.9;  // Sıcak havada %10 azalma
+            
+            // Hava koşulları etkisi:
+            const weatherCondition = weatherData.weather?.[0]?.main?.toLowerCase() || 'clear';
+            if (weatherCondition.includes('rain')) weatherImpact *= 0.85;  // Yağmurda %15 azalma
+            else if (weatherCondition.includes('snow')) weatherImpact *= 0.6;  // Karda %40 azalma
+            else if (weatherCondition.includes('wind')) weatherImpact *= 0.80;  // Rüzgarda %20 azalma
+            else if (weatherCondition.includes('fog')) weatherImpact *= 0.8;  // Sisli havada %20 azalma
+            else if (weatherCondition.includes('storm')) weatherImpact *= 0.4;  // Fırtınada %40 azalma
+            
+            console.log(`Hava durumu: ${weatherCondition}, Sıcaklık: ${temp.toFixed(1)}°C, Menzil etkisi = ${weatherImpact.toFixed(2)}`);
+        }
+        
+        // Toplam etki faktörünü hesapla
+        const totalImpact = trafficImpact * weatherImpact;
+        
+        // Etki faktörünü uygulayarak gerçek menzili hesapla
+        const effectiveRange = actualRange * totalImpact;
+        
+        console.log(`Rota mesafesi: ${totalDistance}km, Araç menzili: ${actualRange}km, Efektif menzil: ${effectiveRange.toFixed(1)}km (Etki faktörü: ${totalImpact.toFixed(2)})`);
+        
+        if (totalDistance <= effectiveRange) {
+            // Menzil yeterli, şarj istasyonu gerekmiyor
+            return { viable: true, remainingRange: effectiveRange - totalDistance, impactFactor: totalImpact };
         } else {
-            const requiredStops = calculateRequiredChargingStops(totalDistance, actualRange);
-            return { viable: false, requiredStops };
+            // Kaç şarj istasyonu gerekecek hesapla
+            let remainingDistance = totalDistance - effectiveRange;
+            const baseChargeRange = maxRange * 0.8; // Şarj istasyonunda dolacak temel menzil (%80)
+            const effectiveChargeRange = baseChargeRange * totalImpact; // Hava ve trafik etkileri uygulanmış menzil
+            const requiredStops = Math.ceil(remainingDistance / effectiveChargeRange);
+            
+            console.log(`Yetersiz menzil. Gereken şarj durağı sayısı: ${requiredStops} (Etki faktörü: ${totalImpact.toFixed(2)})`);
+            return { viable: false, requiredStops, impactFactor: totalImpact };
         }
     } catch (error) {
         console.error('Rota kontrol hatası:', error);
@@ -512,54 +550,40 @@ async function checkRouteViability(route) {
     }
 }
 
-async function calculateTrafficImpact(routeLeg) {
-    let trafficImpact = 1.0;
-    
-    if (routeLeg.duration_in_traffic && routeLeg.duration) {
-        const trafficRatio = routeLeg.duration_in_traffic.value / routeLeg.duration.value;
-        
-        // Trafik yoğunluğuna göre menzil etkisi:
-        if (trafficRatio > 1.8) trafficImpact = 0.7;  // %30 azalma
-        else if (trafficRatio > 1.5) trafficImpact = 0.8;  // %20 azalma
-        else if (trafficRatio > 1.2) trafficImpact = 0.9;  // %10 azalma
-        else if (trafficRatio > 1.0) trafficImpact = 0.95; // %5 azalma
-    }
-    
-    return trafficImpact;
-}
-
-async function calculateWeatherImpact(routeLeg) {
-    const weatherData = await getWeatherData(routeLeg.start_location);
-    let weatherImpact = 1.0;
-    
-    // Sıcaklık etkisi:
-    const temp = weatherData.main?.temp - 273.15; // Kelvin'den Celsius'a
-    if (temp < 0) weatherImpact *= 0.8;  // Soğuk havada %20 azalma
-    else if (temp > 35) weatherImpact *= 0.9;  // Sıcak havada %10 azalma
-    
-    // Hava koşulları etkisi:
-    const weatherCondition = weatherData.weather?.[0]?.main?.toLowerCase() || 'clear';
-    if (weatherCondition.includes('rain')) weatherImpact *= 0.85;  // Yağmurda %15 azalma
-    else if (weatherCondition.includes('snow')) weatherImpact *= 0.6;  // Karda %40 azalma
-    else if (weatherCondition.includes('wind')) weatherImpact *= 0.80;  // Rüzgarda %20 azalma
-    else if (weatherCondition.includes('fog')) weatherImpact *= 0.8;  // Sisli havada %20 azalma
-    else if (weatherCondition.includes('storm')) weatherImpact *= 0.4;  // Fırtınada %40 azalma
-    
-    return weatherImpact;
-}
-
 async function handleChargingStationSuggestion(route, requiredStops) {
-    const leg = route.routes[0].legs[0];
-    const totalDistance = leg.distance.value / 1000;
+    try {
+        const stations = await findOptimalChargingStations(
+            route.routes[0].legs[0].start_location,
+            route.routes[0].legs[0].end_location,
+            requiredStops
+        );
 
-    // En uygun şarj istasyonlarını bul
-    const optimalStations = await findOptimalChargingStations(leg.start_location, leg.end_location, requiredStops);
-
-    if (optimalStations.length > 0) {
         // Mevcut dialog'ları temizle
         const existingDialog = document.querySelector('.custom-dialog-overlay');
         if (existingDialog) {
             existingDialog.remove();
+        }
+
+        // Trafik ve hava durumu etkilerini hesapla
+        const leg = route.routes[0].legs[0];
+        let trafficImpact = 1.0;
+        
+        if (leg.duration_in_traffic && leg.duration) {
+            const trafficRatio = leg.duration_in_traffic.value / leg.duration.value;
+            
+            // Trafik yoğunluğuna göre menzil etkisi:
+            if (trafficRatio > 1.8) trafficImpact = 0.7;  // %30 azalma
+            else if (trafficRatio > 1.5) trafficImpact = 0.8;  // %20 azalma
+            else if (trafficRatio > 1.2) trafficImpact = 0.9;  // %10 azalma
+            else if (trafficRatio > 1.0) trafficImpact = 0.95; // %5 azalma
+        }
+
+        // Trafik durumu mesajı
+        let trafficMessage = '';
+        if (trafficImpact < 0.8) {
+            trafficMessage = `<p class="traffic-warning">⚠️ Yoğun trafik nedeniyle menzil %${Math.round((1-trafficImpact)*100)} azaldı!</p>`;
+        } else if (trafficImpact < 0.95) {
+            trafficMessage = `<p class="traffic-info">ℹ️ Trafik nedeniyle menzil %${Math.round((1-trafficImpact)*100)} azaldı.</p>`;
         }
 
         // Dialog HTML'i oluştur
@@ -572,13 +596,16 @@ async function handleChargingStationSuggestion(route, requiredStops) {
                     </div>
                     <div class="dialog-content">
                         <p class="dialog-message">Mevcut şarj seviyesi ile hedefe ulaşmanız mümkün değil.</p>
+                        ${trafficMessage}
                         <div class="stations-list">
                             <p class="list-title">Önerilen şarj istasyonu durakları:</p>
-                            ${optimalStations.map((station, index) => `
+                            ${stations.map((station, index) => `
                                 <div class="station-item">
                                     <span class="station-number">${index + 1}.</span>
                                     <span class="station-name">${station.name}</span>
                                     <span class="station-distance">(${station.distance.toFixed(1)} km)</span>
+                                    ${station.trafficImpact < 0.9 ? 
+                                        `<span class="traffic-badge">🚦 Yoğun Trafik</span>` : ''}
                                 </div>
                             `).join('')}
                         </div>
@@ -595,6 +622,36 @@ async function handleChargingStationSuggestion(route, requiredStops) {
         // Dialog'u sayfaya ekle
         document.body.insertAdjacentHTML('beforeend', dialogHTML);
 
+        // Stil ekle
+        const styleElement = document.createElement('style');
+        styleElement.textContent = `
+            .traffic-warning {
+                color: #d9534f;
+                font-weight: bold;
+                margin: 10px 0;
+                padding: 5px;
+                background-color: rgba(217, 83, 79, 0.1);
+                border-radius: 4px;
+            }
+            .traffic-info {
+                color: #f0ad4e;
+                margin: 10px 0;
+                padding: 5px;
+                background-color: rgba(240, 173, 78, 0.1);
+                border-radius: 4px;
+            }
+            .traffic-badge {
+                display: inline-block;
+                font-size: 0.8em;
+                background-color: #d9534f;
+                color: white;
+                padding: 2px 5px;
+                border-radius: 3px;
+                margin-left: 5px;
+            }
+        `;
+        document.head.appendChild(styleElement);
+
         // Kullanıcının seçimini bekle
         return new Promise((resolve) => {
             const dialog = document.querySelector('.custom-dialog-overlay');
@@ -603,12 +660,34 @@ async function handleChargingStationSuggestion(route, requiredStops) {
 
             confirmBtn.addEventListener('click', () => {
                 dialog.remove();
+                
                 // Şarj istasyonlarını waypoint olarak ekle
-                const waypoints = optimalStations.map(station => ({
-                    location: new google.maps.LatLng(station.latitude, station.longitude),
+                const waypoints = stations.map(station => ({
+                    location: new google.maps.LatLng(
+                        parseFloat(station.latitude),
+                        parseFloat(station.longitude)
+                    ),
                     stopover: true
                 }));
+
+                // Rotayı yeniden hesapla
                 recalculateRouteWithWaypoints(waypoints);
+
+                // Şarj istasyonlarını haritada göster
+                stations.forEach(station => {
+                    const marker = new google.maps.Marker({
+                        position: new google.maps.LatLng(
+                            parseFloat(station.latitude),
+                            parseFloat(station.longitude)
+                        ),
+                        map: map,
+                        icon: {
+                            url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
+                        },
+                        title: station.name
+                    });
+                    markers.push(marker);
+                });
             });
 
             cancelBtn.addEventListener('click', () => {
@@ -620,8 +699,11 @@ async function handleChargingStationSuggestion(route, requiredStops) {
                 document.getElementById('toggleChargingStationsButton').style.display = 'block';
             });
         });
-    } else {
-        // Özel hata dialog'u oluştur
+
+    } catch (error) {
+        console.error('Şarj istasyonu önerisi oluşturulamadı:', error);
+        
+        // Hata durumunda özel hata dialog'u göster
         const errorDialogHTML = `
             <div class="custom-dialog-overlay">
                 <div class="custom-dialog error">
@@ -1148,115 +1230,197 @@ function getTrafficColor(congestion) {
     return colors[congestion] || colors.unknown;
 }
 // Hava durumu verilerini gösteren fonksiyon
-function showWeatherDataAlongRoute(route) {
-    // settings.py dosyasında bulunan weather API anahtarını çek
-    const weatherAPIKey = OPENWEATHER_API_KEY;
-    const weatherUrl = 'https://api.openweathermap.org/data/2.5/weather';
+async function showWeatherDataAlongRoute(route) {
+    try {
+        const leg = route.routes[0].legs[0];
+        let weatherEffect = 1.0;
+        let trafficEffect = 1.0;
 
-    const steps = route.routes[0].legs[0].steps;
-    let currentDistance = 0;
-    let weatherMarkers = [];
-    
-    steps.forEach(step => {
-        const stepDistance = step.distance.value;
-        currentDistance += stepDistance;
+        // Rota üzerindeki hava durumu verilerini al
+        const weatherData = await getWeatherData(leg.start_location);
+        let weatherConditionText = "Normal";
+        
+        if (weatherData && weatherData.weather && weatherData.weather[0]) {
+            const weatherCondition = weatherData.weather[0].main.toLowerCase();
+            const temp = weatherData.main.temp - 273.15; // Kelvin'den Celsius'a çevir
 
-        if (currentDistance >= 20000) {
-            const lat = step.end_location.lat();
-            const lng = step.end_location.lng();
-            
-            fetch(`${weatherUrl}?lat=${lat}&lon=${lng}&appid=${weatherAPIKey}`)
-                .then(response => response.json())
-                .then(data => {
-                    // Hava durumu açıklamasını Türkçe'ye çevir
-                    const weatherDescriptions = {
-                        'clear sky': 'Açık Hava',
-                        'few clouds': 'Az Bulutlu',
-                        'scattered clouds': 'Parçalı Bulutlu',
-                        'broken clouds': 'Çok Bulutlu',
-                        'shower rain': 'Sağanak Yağış',
-                        'rain': 'Yağmurlu',
-                        'thunderstorm': 'Gök Gürültülü Fırtına',
-                        'snow': 'Karlı',
-                        'mist': 'Sisli'
-                    };
+            // Hava durumu etkilerini hesapla
+            if (weatherCondition.includes('rain')) {
+                weatherEffect = 0.90;
+                weatherConditionText = "Yağmurlu";
+                console.log('Yağmurlu hava nedeniyle menzil %10 azaltıldı');
+            } else if (weatherCondition.includes('snow')) {
+                weatherEffect = 0.80;
+                weatherConditionText = "Karlı";
+                console.log('Karlı hava nedeniyle menzil %20 azaltıldı');
+            } else if (weatherCondition.includes('thunderstorm')) {
+                weatherEffect = 0.85;
+                weatherConditionText = "Fırtınalı";
+                console.log('Fırtınalı hava nedeniyle menzil %15 azaltıldı');
+            } else if (weatherCondition.includes('fog') || weatherCondition.includes('mist')) {
+                weatherEffect = 0.95;
+                weatherConditionText = "Sisli";
+                console.log('Sisli hava nedeniyle menzil %5 azaltıldı');
+            } else if (weatherCondition.includes('clear')) {
+                weatherConditionText = "Açık";
+            } else if (weatherCondition.includes('cloud')) {
+                weatherConditionText = "Bulutlu";
+            }
 
-                    const weatherInfo = weatherDescriptions[data.weather[0].description.toLowerCase()] || data.weather[0].description;
-                    const temperature = data.main.temp - 273.15;
-                    const humidity = data.main.humidity;
-                    const windSpeed = data.wind.speed;
-                    
-                    // Hava durumu içeriğini oluştur
-                    const weatherContent = `
-                        <div class="info-window-content weather-info-window">
-                            <button class="close-button" onclick="closeCurrentInfoWindow()"></button>
-                            <div class="info-header">
-                                <h3>Hava Durumu Bilgisi</h3>
-                            </div>
-                            <div class="info-content">
-                                <div class="weather-details">
-                                    <p><strong>Durum:</strong> ${weatherInfo}</p>
-                                    <p><strong>Sıcaklık:</strong> ${temperature.toFixed(1)}°C</p>
-                                    <p><strong>Nem:</strong> %${humidity}</p>
-                                    <p><strong>Rüzgar Hızı:</strong> ${windSpeed} m/s</p>
-                                </div>
-                                <div class="info-buttons">
-                                    <button onclick="zoomToLocation(${lat}, ${lng})">Bu Konuma Yakınlaş</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-
-                    const weatherMarker = new google.maps.Marker({
-                        position: { lat, lng },
-                        map: map,
-                        icon: {
-                            url: 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png'
-                        },
-                        title: 'Hava Durumu Noktası'
-                    });
-
-                    const infoWindow = new google.maps.InfoWindow({
-                        content: weatherContent,
-                        maxWidth: 300
-                    });
-
-                    // Info window stil ayarları
-                    google.maps.event.addListener(infoWindow, 'domready', function() {
-                        const iwOuter = document.querySelector('.gm-style-iw');
-                        if (iwOuter) {
-                            iwOuter.parentElement.style.backgroundColor = 'transparent';
-                            iwOuter.style.padding = '0';
-                            
-                            // Kapatma butonunu özelleştir
-                            const closeButton = iwOuter.nextElementSibling;
-                            if (closeButton) {
-                                closeButton.style.opacity = '1';
-                                closeButton.style.right = '5px';
-                                closeButton.style.top = '5px';
-                                closeButton.style.border = 'none';
-                            }
-                        }
-                    });
-
-                    weatherMarker.addListener('click', () => {
-                        if (currentInfoWindow) {
-                            currentInfoWindow.close();
-                        }
-                        infoWindow.open(map, weatherMarker);
-                        currentInfoWindow = infoWindow;
-                    });
-
-                    weatherMarkers.push(weatherMarker);
-                    markers.push(weatherMarker);
-                })
-                .catch(error => {
-                    console.error('Hava durumu verisi alınırken hata:', error);
-                });
-
-            currentDistance = 0;
+            // Sıcaklık etkisi
+            if (temp < 0) {
+                weatherEffect *= 0.90;
+                console.log('Düşük sıcaklık nedeniyle menzil %10 daha azaltıldı');
+            } else if (temp > 35) {
+                weatherEffect *= 0.95;
+                console.log('Yüksek sıcaklık nedeniyle menzil %5 daha azaltıldı');
+            }
+        } else {
+            console.warn('Hava durumu verisi alınamadı');
         }
-    });
+
+        // Trafik durumunu kontrol et
+        let trafficConditionText = "Normal";
+        
+        if (leg.duration_in_traffic && leg.duration) {
+            const trafficRatio = leg.duration_in_traffic.value / leg.duration.value;
+            
+            if (trafficRatio > 1.8) {
+                trafficEffect = 0.70;
+                trafficConditionText = "Çok Yoğun";
+                console.log('Çok yoğun trafik nedeniyle menzil %30 azaltıldı');
+            } else if (trafficRatio > 1.5) {
+                trafficEffect = 0.80;
+                trafficConditionText = "Yoğun";
+                console.log('Yoğun trafik nedeniyle menzil %20 azaltıldı');
+            } else if (trafficRatio > 1.2) {
+                trafficEffect = 0.90;
+                trafficConditionText = "Orta Yoğunlukta";
+                console.log('Orta yoğunlukta trafik nedeniyle menzil %10 azaltıldı');
+            } else if (trafficRatio > 1.0) {
+                trafficEffect = 0.95;
+                trafficConditionText = "Hafif";
+                console.log('Hafif trafik nedeniyle menzil %5 azaltıldı');
+            }
+        } else {
+            console.warn('Trafik verisi alınamadı');
+        }
+
+        // Toplam etki faktörünü hesapla
+        const totalEffect = weatherEffect * trafficEffect;
+        
+        // Global değişken olarak sakla
+        window.routeConditionsEffect = totalEffect;
+
+        console.log(`Rota Koşulları Analizi:
+            - Hava durumu etkisi: ${((1 - weatherEffect) * 100).toFixed(1)}% azalma
+            - Trafik etkisi: ${((1 - trafficEffect) * 100).toFixed(1)}% azalma
+            - Toplam etki: ${((1 - totalEffect) * 100).toFixed(1)}% azalma`);
+
+        // Kullanıcıya bilgi ver
+        const directionsPanel = document.getElementById('directionsPanel');
+        if (directionsPanel) {
+            // Mevcut içeriği koru
+            const currentContent = directionsPanel.innerHTML;
+            
+            // Koşullar bilgisini ekle
+            const conditionsHTML = `
+                <div class="conditions-panel">
+                    <h4>Rota Koşulları</h4>
+                    <div class="conditions-content">
+                        <div class="condition-row">
+                            <span class="condition-label">Hava Durumu:</span>
+                            <span class="condition-value ${weatherEffect < 0.9 ? 'warning' : ''}">${weatherConditionText}</span>
+                            ${weatherEffect < 1.0 ? 
+                                `<span class="condition-impact negative">-%${Math.round((1-weatherEffect)*100)}</span>` : 
+                                '<span class="condition-impact neutral">Etki Yok</span>'}
+                        </div>
+                        <div class="condition-row">
+                            <span class="condition-label">Trafik Durumu:</span>
+                            <span class="condition-value ${trafficEffect < 0.9 ? 'warning' : ''}">${trafficConditionText}</span>
+                            ${trafficEffect < 1.0 ? 
+                                `<span class="condition-impact negative">-%${Math.round((1-trafficEffect)*100)}</span>` : 
+                                '<span class="condition-impact neutral">Etki Yok</span>'}
+                        </div>
+                        <div class="condition-row total">
+                            <span class="condition-label">Toplam Menzil Etkisi:</span>
+                            <span class="condition-value ${totalEffect < 0.9 ? 'warning' : ''}">${totalEffect < 0.8 ? 'Önemli Azalma' : (totalEffect < 0.9 ? 'Orta Azalma' : 'Az Etki')}</span>
+                            <span class="condition-impact negative">-%${Math.round((1-totalEffect)*100)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Stil ekle
+            const styleElement = document.createElement('style');
+            styleElement.textContent = `
+                .conditions-panel {
+                    margin-top: 15px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    padding: 10px;
+                    background-color: #f9f9f9;
+                }
+                .conditions-panel h4 {
+                    margin-top: 0;
+                    margin-bottom: 10px;
+                    color: #333;
+                }
+                .conditions-content {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                }
+                .condition-row {
+                    display: flex;
+                    align-items: center;
+                    padding: 5px 0;
+                }
+                .condition-row.total {
+                    margin-top: 5px;
+                    padding-top: 10px;
+                    border-top: 1px dashed #ddd;
+                    font-weight: bold;
+                }
+                .condition-label {
+                    flex: 1;
+                    color: #555;
+                }
+                .condition-value {
+                    flex: 1;
+                    font-weight: 500;
+                }
+                .condition-value.warning {
+                    color: #d9534f;
+                }
+                .condition-impact {
+                    flex: 0 0 60px;
+                    text-align: right;
+                    font-size: 0.9em;
+                    padding: 2px 5px;
+                    border-radius: 3px;
+                }
+                .condition-impact.negative {
+                    color: #fff;
+                    background-color: #d9534f;
+                }
+                .condition-impact.neutral {
+                    color: #fff;
+                    background-color: #5bc0de;
+                }
+            `;
+            document.head.appendChild(styleElement);
+            
+            // Panele ekle
+            directionsPanel.innerHTML = currentContent + conditionsHTML;
+        }
+
+        return totalEffect;
+
+    } catch (error) {
+        console.error('Hava durumu ve trafik analizi yapılırken hata oluştu:', error);
+        return 1.0; // Hata durumunda etkiyi 1 (etkisiz) olarak döndür
+    }
 }
 
 // Konuma yakınlaşma fonksiyonu
@@ -1270,8 +1434,8 @@ function zoomToLocation(lat, lng) {
 
 // getBatteryLevel fonksiyonunu ekle
 async function getBatteryLevel() {
-    const batteryInput = document.getElementById('batteryLevel');
-    return parseFloat(batteryInput.value) || 100; // Varsayılan olarak 100
+    const batteryLevel = parseInt(document.getElementById('batteryLevel').value) || 100;
+    return batteryLevel;
 }
 
 // calculateRequiredChargingStops fonksiyonunu ekle
@@ -1280,7 +1444,7 @@ function calculateRequiredChargingStops(totalDistance, actualRange) {
     return Math.max(0, stops);
 }
 
-// findOptimalChargingStations fonksiyonunu ekle
+// findOptimalChargingStations fonksiyonunda değişiklik yapalım
 async function findOptimalChargingStations(startLocation, endLocation, requiredStops) {
     try {
         const lat1 = startLocation.lat();
@@ -1288,58 +1452,355 @@ async function findOptimalChargingStations(startLocation, endLocation, requiredS
         const lat2 = endLocation.lat();
         const lng2 = endLocation.lng();
         
-        const stations = [];
-        const addedStationIds = new Set(); // Eklenen istasyonların ID'lerini takip etmek için
+        // Kullanıcı şarj seviyesi ve araç bilgilerini al
+        const batteryLevel = parseInt(document.getElementById('batteryLevel').value) || 100;
+        const response = await fetch('/harita/get-user-car-info/');
+        const carInfo = await response.json();
         
-        // Her durak için optimal nokta hesapla
-        for (let i = 1; i <= requiredStops; i++) {
-            const ratio = i / (requiredStops + 1);
-            const lat = lat1 + (lat2 - lat1) * ratio;
-            const lng = lng1 + (lng2 - lng1) * ratio;
+        const maxRange = carInfo.average_range || 350;
+        const initialRange = (maxRange * batteryLevel) / 100;
+
+        // Önce ana rotayı hesapla
+        const directionsService = new google.maps.DirectionsService();
+        const mainRoute = await new Promise((resolve, reject) => {
+            directionsService.route({
+                origin: new google.maps.LatLng(lat1, lng1),
+                destination: new google.maps.LatLng(lat2, lng2),
+                travelMode: google.maps.TravelMode.DRIVING,
+                drivingOptions: {
+                    departureTime: new Date(),
+                    trafficModel: google.maps.TrafficModel.BEST_GUESS
+                }
+            }, (response, status) => {
+                if (status === google.maps.DirectionsStatus.OK) {
+                    resolve(response);
+                } else {
+                    reject(status);
+                }
+            });
+        });
+
+        const totalDistance = mainRoute.routes[0].legs[0].distance.value / 1000;
+        
+        // Trafik ve hava durumu etkilerini hesapla
+        const leg = mainRoute.routes[0].legs[0];
+        let trafficImpact = 1.0;
+        
+        if (leg.duration_in_traffic && leg.duration) {
+            const trafficRatio = leg.duration_in_traffic.value / leg.duration.value;
             
-            // Bu noktaya en yakın şarj istasyonlarını al
-            const response = await fetch(`/harita/get-nearby-charging-stations/?lat=${lat}&lng=${lng}`);
+            // Trafik yoğunluğuna göre menzil etkisi:
+            if (trafficRatio > 1.8) trafficImpact = 0.7;  // %30 azalma
+            else if (trafficRatio > 1.5) trafficImpact = 0.8;  // %20 azalma
+            else if (trafficRatio > 1.2) trafficImpact = 0.9;  // %10 azalma
+            else if (trafficRatio > 1.0) trafficImpact = 0.95; // %5 azalma
+            
+            console.log(`Trafik durumu: Oran = ${trafficRatio.toFixed(2)}, Menzil etkisi = ${trafficImpact.toFixed(2)}`);
+        }
+        
+        // Hava durumu etkisini hesapla
+        const weatherData = await getWeatherData(leg.start_location);
+        let weatherImpact = 1.0;
+        
+        if (weatherData && weatherData.weather && weatherData.weather[0]) {
+            // Sıcaklık etkisi:
+            const temp = weatherData.main?.temp - 273.15; // Kelvin'den Celsius'a
+            if (temp < 0) weatherImpact *= 0.8;  // Soğuk havada %20 azalma
+            else if (temp > 35) weatherImpact *= 0.9;  // Sıcak havada %10 azalma
+            
+            // Hava koşulları etkisi:
+            const weatherCondition = weatherData.weather?.[0]?.main?.toLowerCase() || 'clear';
+            if (weatherCondition.includes('rain')) weatherImpact *= 0.85;  // Yağmurda %15 azalma
+            else if (weatherCondition.includes('snow')) weatherImpact *= 0.6;  // Karda %40 azalma
+            else if (weatherCondition.includes('wind')) weatherImpact *= 0.80;  // Rüzgarda %20 azalma
+            else if (weatherCondition.includes('fog')) weatherImpact *= 0.8;  // Sisli havada %20 azalma
+            else if (weatherCondition.includes('storm')) weatherImpact *= 0.4;  // Fırtınada %40 azalma
+        }
+        
+        // Toplam etki faktörünü hesapla
+        const totalImpact = trafficImpact * weatherImpact;
+        
+        // Etki faktörünü uygulayarak gerçek menzili hesapla
+        const effectiveInitialRange = initialRange * totalImpact;
+        const baseChargeRange = maxRange * 0.8; // Şarj istasyonunda dolacak temel menzil (%80)
+        
+        console.log(`Rota analizi başlıyor:
+            - Araç: ${carInfo.car_name}
+            - Maksimum menzil: ${maxRange} km
+            - Mevcut şarj: %${batteryLevel}
+            - Mevcut menzil: ${initialRange} km
+            - Efektif menzil: ${effectiveInitialRange.toFixed(1)} km (Etki faktörü: ${totalImpact.toFixed(2)})
+            - Toplam mesafe: ${totalDistance} km`);
+
+        // Eğer araç menzili tüm rotayı karşılıyorsa durak gerekmez
+        if (effectiveInitialRange >= totalDistance) {
+            return [];
+        }
+
+        // Rota noktalarını al
+        const routePolyline = mainRoute.routes[0].overview_polyline;
+        const decodedPath = google.maps.geometry.encoding.decodePath(routePolyline);
+        
+        // Rotayı 1 km'lik segmentlere böl (daha hassas mesafe takibi için)
+        const routeSegments = [];
+        let cumulativeDistance = 0;
+        
+        for (let i = 1; i < decodedPath.length; i++) {
+            const segmentDistance = google.maps.geometry.spherical.computeDistanceBetween(
+                decodedPath[i-1], decodedPath[i]) / 1000;
+            
+            cumulativeDistance += segmentDistance;
+            routeSegments.push({
+                point: decodedPath[i],
+                cumulativeDistance: cumulativeDistance
+            });
+        }
+
+        const stations = [];
+        let currentRange = effectiveInitialRange; // Etki faktörü uygulanmış menzil
+        let currentPosition = new google.maps.LatLng(lat1, lng1);
+        let totalTraveled = 0;
+
+        // Ana döngü: Tüm rota boyunca şarj istasyonlarını belirle
+        while (totalTraveled < totalDistance) {
+            // Güvenli sürüş mesafesi (menzili %20 kalana kadar kullan)
+            const safeRange = currentRange * 0.8;
+            
+            // Rotada gidilebilecek maksimum mesafeyi bul
+            let targetSegment = null;
+            for (const segment of routeSegments) {
+                // Henüz ulaşılmayan ve menzil içindeki segment mi?
+                if (segment.cumulativeDistance > totalTraveled && 
+                    segment.cumulativeDistance - totalTraveled <= safeRange) {
+                    targetSegment = segment;
+                } else if (segment.cumulativeDistance > totalTraveled + safeRange) {
+                    // Menzil dışına çıkıldı, önceki segmentte dur
+                    break;
+                }
+            }
+            
+            if (!targetSegment) {
+                // Varış noktasına erişilebildi
+                break;
+            }
+            
+            const targetDistance = targetSegment.cumulativeDistance - totalTraveled;
+            const targetPoint = targetSegment.point;
+            
+            console.log(`Şarj istasyonu arama:
+                - Kalan menzil: ${currentRange.toFixed(1)} km
+                - Güvenli mesafe: ${safeRange.toFixed(1)} km
+                - Hedef mesafe: ${targetDistance.toFixed(1)} km`);
+            
+            // Bu noktaya yakın şarj istasyonlarını ara
+            const searchRadius = 30000; // 30 km yarıçap
+            const response = await fetch(
+                `/harita/get-nearby-charging-stations/?lat=${targetPoint.lat()}&lng=${targetPoint.lng()}&radius=${searchRadius}`
+            );
             const data = await response.json();
             
-            if (data.stations && data.stations.length > 0) {
-                // Daha önce eklenmemiş en yakın istasyonu bul
-                for (const station of data.stations) {
-                    if (!addedStationIds.has(station.place_id)) {
-                        station.distance = calculateDistance(lat1, lng1, station.latitude, station.longitude);
-                        stations.push(station);
-                        addedStationIds.add(station.place_id); // İstasyon ID'sini kaydet
-                        break; // İlk benzersiz istasyonu bulduktan sonra döngüden çık
+            if (!data.stations || data.stations.length === 0) {
+                throw new Error("Bu bölgede şarj istasyonu bulunamadı!");
+            }
+            
+            // Her şarj istasyonu için gerçek rota mesafesini hesapla
+            const stationCandidates = [];
+            
+            for (const station of data.stations) {
+                const stationPoint = new google.maps.LatLng(
+                    parseFloat(station.latitude), 
+                    parseFloat(station.longitude)
+                );
+                
+                // Gerçek rota üzerinden mesafe hesapla
+                try {
+                    const routeToStation = await new Promise((resolve, reject) => {
+                        directionsService.route({
+                            origin: currentPosition,
+                            destination: stationPoint,
+                            travelMode: google.maps.TravelMode.DRIVING,
+                            drivingOptions: {
+                                departureTime: new Date(),
+                                trafficModel: google.maps.TrafficModel.BEST_GUESS
+                            }
+                        }, (response, status) => {
+                            if (status === google.maps.DirectionsStatus.OK) {
+                                resolve(response);
+                            } else {
+                                reject(status);
+                            }
+                        });
+                    });
+                    
+                    const realDistance = routeToStation.routes[0].legs[0].distance.value / 1000;
+                    
+                    // Trafik durumunu kontrol et
+                    let segmentTrafficImpact = 1.0;
+                    const routeLeg = routeToStation.routes[0].legs[0];
+                    
+                    if (routeLeg.duration_in_traffic && routeLeg.duration) {
+                        const segmentTrafficRatio = routeLeg.duration_in_traffic.value / routeLeg.duration.value;
+                        
+                        // Trafik yoğunluğuna göre menzil etkisi:
+                        if (segmentTrafficRatio > 1.8) segmentTrafficImpact = 0.7;  // %30 azalma
+                        else if (segmentTrafficRatio > 1.5) segmentTrafficImpact = 0.8;  // %20 azalma
+                        else if (segmentTrafficRatio > 1.2) segmentTrafficImpact = 0.9;  // %10 azalma
+                        else if (segmentTrafficRatio > 1.0) segmentTrafficImpact = 0.95; // %5 azalma
+                    }
+                    
+                    // Trafik etkisi uygulanmış efektif mesafe
+                    const effectiveDistance = realDistance / segmentTrafficImpact;
+                    
+                    // Menzil içinde ve en az 50 km mesafede
+                    if (effectiveDistance <= currentRange && effectiveDistance >= Math.min(50, currentRange * 0.2)) {
+                        stationCandidates.push({
+                            ...station,
+                            distance: realDistance,
+                            effectiveDistance: effectiveDistance,
+                            trafficImpact: segmentTrafficImpact,
+                            point: stationPoint
+                        });
+                    }
+                } catch (error) {
+                    console.warn(`Rota hesaplama hatası: ${error}`);
+                    // Hata durumunda düz çizgi mesafesini kullan
+                    const directDistance = google.maps.geometry.spherical.computeDistanceBetween(
+                        currentPosition, stationPoint) / 1000;
+                    
+                    // Düz çizgi için güvenlik faktörü ve genel trafik etkisi
+                    const estimatedDistance = directDistance * 1.3 / trafficImpact;
+                    
+                    if (estimatedDistance <= currentRange * 0.7) {
+                        stationCandidates.push({
+                            ...station,
+                            distance: directDistance * 1.3, // Gerçek yol faktörü
+                            effectiveDistance: estimatedDistance,
+                            trafficImpact: trafficImpact, // Genel trafik etkisi kullan
+                            point: stationPoint,
+                            isEstimated: true
+                        });
                     }
                 }
             }
+            
+            // Uygun istasyon bulunamadıysa hata döndür
+            if (stationCandidates.length === 0) {
+                throw new Error("Menzil içinde şarj istasyonu bulunamadı!");
+            }
+            
+            // En optimal istasyonu seç: Optimizasyon kriteri olarak
+            // ilerleme yüzdesi / efektif mesafe oranını kullan (en verimli ilerleme)
+            stationCandidates.sort((a, b) => {
+                // İlerleme yüzdesi (toplam mesafeye göre)
+                const progressA = (totalTraveled + a.distance) / totalDistance;
+                const progressB = (totalTraveled + b.distance) / totalDistance;
+                
+                // Efektif mesafe başına ilerleme
+                const efficiencyA = progressA / a.effectiveDistance;
+                const efficiencyB = progressB / b.effectiveDistance;
+                
+                return efficiencyB - efficiencyA;
+            });
+            
+            const selectedStation = stationCandidates[0];
+            
+            // Seçilen istasyondan sonra varış noktasına kalan mesafeyi hesapla
+            const remainingToDestination = totalDistance - (totalTraveled + selectedStation.distance);
+            
+            // Eğer kalan mesafe mevcut menzilin %30'undan azsa ve doğrudan varış noktasına gidilebiliyorsa
+            // son şarj istasyonunu ekleme
+            if (remainingToDestination <= currentRange * 0.3) {
+                console.log(`Son şarj istasyonu atlanıyor:
+                    - Seçilen istasyon: ${selectedStation.name}
+                    - Varış noktasına kalan: ${remainingToDestination.toFixed(1)} km
+                    - Mevcut menzil: ${currentRange} km
+                    - Doğrudan varışa gidilebilir`);
+                break;
+            }
+
+            console.log(`Şarj istasyonu seçildi:
+                - İsim: ${selectedStation.name}
+                - Mesafe: ${selectedStation.distance.toFixed(1)} km
+                - Efektif mesafe: ${selectedStation.effectiveDistance.toFixed(1)} km
+                - Trafik etkisi: ${selectedStation.trafficImpact.toFixed(2)}
+                - ${selectedStation.isEstimated ? '(Tahmini mesafe)' : '(Gerçek rota mesafesi)'}`);
+            
+            stations.push(selectedStation);
+            
+            // Konum ve menzil bilgilerini güncelle
+            currentPosition = selectedStation.point;
+            totalTraveled += selectedStation.distance;
+            
+            // Şarj istasyonundaki hava durumunu al
+            const stationWeatherData = await getWeatherData(selectedStation.point);
+            let stationWeatherImpact = 1.0;
+            
+            if (stationWeatherData && stationWeatherData.weather && stationWeatherData.weather[0]) {
+                // Sıcaklık etkisi:
+                const temp = stationWeatherData.main?.temp - 273.15; // Kelvin'den Celsius'a
+                if (temp < 0) stationWeatherImpact *= 0.8;  // Soğuk havada %20 azalma
+                else if (temp > 35) stationWeatherImpact *= 0.9;  // Sıcak havada %10 azalma
+                
+                // Hava koşulları etkisi:
+                const weatherCondition = stationWeatherData.weather?.[0]?.main?.toLowerCase() || 'clear';
+                if (weatherCondition.includes('rain')) stationWeatherImpact *= 0.85;  // Yağmurda %15 azalma
+                else if (weatherCondition.includes('snow')) stationWeatherImpact *= 0.6;  // Karda %40 azalma
+                else if (weatherCondition.includes('wind')) stationWeatherImpact *= 0.80;  // Rüzgarda %20 azalma
+                else if (weatherCondition.includes('fog')) stationWeatherImpact *= 0.8;  // Sisli havada %20 azalma
+                else if (weatherCondition.includes('storm')) stationWeatherImpact *= 0.4;  // Fırtınada %40 azalma
+            }
+            
+            // Şarj istasyonundan sonraki rota için trafik etkisini hesapla
+            const stationTotalImpact = stationWeatherImpact * selectedStation.trafficImpact;
+            
+            // Araç menzilinin %80'i olarak temel şarj menzilini hesapla
+            const baseChargeRange = maxRange * 0.8; // Şarj istasyonunda dolacak temel menzil (%80)
+            
+            // Şarj istasyonundaki hava durumu ve trafik etkilerini uygula
+            currentRange = baseChargeRange * stationTotalImpact;
+            
+            console.log(`Durum güncellendi:
+                - Kat edilen toplam mesafe: ${totalTraveled.toFixed(1)} km
+                - Yeni şarj sonrası menzil: ${currentRange.toFixed(1)} km (Araç menzilinin %80'i + şarj istasyonu koşulları)
+                - Şarj istasyonu hava durumu etkisi: ${stationWeatherImpact.toFixed(2)}
+                - Şarj istasyonu trafik etkisi: ${selectedStation.trafficImpact.toFixed(2)}
+                - Toplam etki faktörü: ${stationTotalImpact.toFixed(2)}
+                - Varışa kalan mesafe: ${(totalDistance - totalTraveled).toFixed(1)} km`);
+
+            // Eğer kalan mesafe mevcut menzilden azsa, döngüyü sonlandır
+            if (totalDistance - totalTraveled <= currentRange) {
+                console.log(`Hedef menzil içerisinde, başka şarj istasyonu gerekmez:
+                    - Kalan mesafe: ${(totalDistance - totalTraveled).toFixed(1)} km
+                    - Mevcut menzil: ${currentRange} km`);
+                break;
+            }
         }
+
+        // Son bir kontrol daha yap - eğer son istasyon varışa çok yakınsa kaldır
+        if (stations.length > 0) {
+            const lastStation = stations[stations.length - 1];
+            const finalDistance = totalDistance - totalTraveled;
+            
+            if (finalDistance <= currentRange * 0.3) { // Son %30'luk mesafe içindeyse
+                console.log(`Son istasyon kaldırılıyor:
+                    - Kaldırılan istasyon: ${lastStation.name}
+                    - Varışa kalan mesafe: ${finalDistance.toFixed(1)} km
+                    - Mevcut menzil: ${currentRange} km`);
+                stations.pop(); // Son istasyonu kaldır
+            }
+        }
+
+        console.log(`Rota planlaması tamamlandı:
+            - Toplam şarj istasyonu sayısı: ${stations.length}
+            - Toplam mesafe: ${totalDistance.toFixed(1)} km
+            - Toplam etki faktörü: ${totalImpact.toFixed(2)}`);
         
-        // İstasyonları mesafeye göre sırala
-        stations.sort((a, b) => a.distance - b.distance);
+        return stations;
         
-        // Gerekli durak sayısı kadar istasyon döndür
-        return stations.slice(0, requiredStops);
     } catch (error) {
-        console.error('Şarj istasyonları bulunamadı:', error);
-        return [];
+        console.error('Şarj istasyonları hesaplanırken hata oluştu:', error);
+        throw error;
     }
-}
-
-// Mesafe hesaplama yardımcı fonksiyonu
-function calculateDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371; // Dünya'nın yarıçapı (km)
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-}
-
-function toRad(value) {
-    return value * Math.PI / 180;
 }
 
 // recalculateRouteWithWaypoints fonksiyonunu ekle
@@ -1370,26 +1831,6 @@ async function getWeatherData(location) {
         throw new Error('Hava durumu verisi alınamadı');
     }
     return response.json();
-}
-
-// Kapatma fonksiyonunu ekle
-function closeCurrentInfoWindow() {
-    if (currentInfoWindow) {
-        currentInfoWindow.close();
-    }
-}
-
-function validateBatteryLevel(input) {
-    // Değer 100'den büyükse 100'e, 0'dan küçükse 0'a ayarla
-    if (input.value > 100) {
-        input.value = 100;
-    } else if (input.value < 0) {
-        input.value = 0;
-    }
-    // Boş değer girilirse varsayılan olarak 100 yap
-    if (input.value === '') {
-        input.value = 100;
-    }
 }
 
 
