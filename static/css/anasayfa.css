@@ -1,0 +1,89 @@
+:root {
+    --primary-blue: #00e1ff;
+    --secondary-blue: #007bff;
+    --dark-bg: #1a1f25;
+    --light-text: #ffffff;
+    --panel-bg: rgba(26, 31, 37, 0.9);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(rgba(26, 31, 37, 0.7), rgba(26, 31, 37, 0.7)), 
+                url('../resimler/arac.png') no-repeat center center fixed;
+    background-size: cover;
+    color: var(--light-text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    text-align: center;
+    background-color: var(--panel-bg);
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 0 30px rgba(0, 225, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    color: var(--primary-blue);
+}
+
+.subtitle {
+    font-size: 1.2em;
+    margin-bottom: 30px;
+    color: var(--light-text);
+    opacity: 0.9;
+}
+
+.button-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.button {
+    display: inline-block;
+    background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
+    color: var(--light-text);
+    text-decoration: none;
+    padding: 15px 40px;
+    border-radius: 8px;
+    font-size: 1.1em;
+    font-weight: 500;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 225, 255, 0.3);
+}
+
+.login-btn {
+    background: linear-gradient(45deg, var(--primary-blue), var(--secondary-blue));
+}
+
+.register-btn {
+    background: linear-gradient(45deg, var(--secondary-blue), var(--primary-blue));
+}
+
+@media (max-width: 600px) {
+    .container {
+        margin: 20px;
+        padding: 30px;
+    }
+
+    .button-container {
+        flex-direction: column;
+    }
+
+    h1 {
+        font-size: 2em;
+    }
+}

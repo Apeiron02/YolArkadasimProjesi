@@ -1,0 +1,244 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Kullanıcı Bilgileri</title>
+    <link rel="stylesheet" href="{% static 'css/kullanici_bilgileri.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    {% include 'kullanicibilgileri/navbar.html' %}
+    
+    <div class="dashboard-container">
+        <!-- Sol Taraf - Profil Bilgileri -->
+        <div class="profile-section">
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <h2>Kullanıcı Bilgileri</h2>
+                </div>
+                
+                <div class="profile-content">
+                    <div class="info-group">
+                        <div class="info-item">
+                            <span class="label"><i class="fas fa-user"></i> Kullanıcı Adı:</span>
+                            <span class="value">{{ user.username }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label"><i class="fas fa-envelope"></i> E-posta:</span>
+                            <span class="value">{{ user.email }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label"><i class="fas fa-calendar-alt"></i> Kayıt Tarihi:</span>
+                            <span class="value">{{ user.date_joined|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="car-selection">
+                        <h3><i class="fas fa-car-side"></i> Elektrikli Araç Seçimi</h3>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <select name="selected_car" onchange="this.form.submit()">
+                                <option value="">Araç Seçiniz</option>
+                                {% for car in electric_cars %}
+                                    <option value="{{ car.id }}" {% if user_car_preference.selected_car.id == car.id %}selected{% endif %}>
+                                        {{ car.car_name }} (Menzil: {{ car.average_range }} km)
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </form>
+
+                        {% if user_car_preference %}
+                        <div class="selected-car-info">
+                            <div class="car-info-item">
+                                <span class="label"><i class="fas fa-car"></i> Seçili Araç:</span>
+                                <span class="value">{{ user_car_preference.selected_car.car_name }}</span>
+                            </div>
+                            <div class="car-info-item">
+                                <span class="label"><i class="fas fa-road"></i> Ortalama Menzil:</span>
+                                <span class="value">{{ user_car_preference.selected_car.average_range }} km</span>
+                            </div>
+                            <div class="car-info-item">
+                                <span class="label"><i class="fas fa-battery-three-quarters"></i> Batarya Kapasitesi:</span>
+                                <span class="value">{{ user_car_preference.selected_car.kwh }} kWh</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <a href="{% url 'giris' %}" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sağ Taraf - Geçmiş Bilgileri -->
+        <div class="history-section">
+            <!-- Rota Geçmişi -->
+            <div class="history-card routes-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-map-marked-alt"></i> Rota Geçmişi</h3>
+                </div>
+                <div class="routes-container">
+                    {% if routes %}
+                        {% for route in routes %}
+                            <div class="route-item">
+                                <div class="route-header">
+                                    <span class="route-date"><i class="fas fa-calendar"></i> {{ route.created_at|date:"d/m/Y H:i" }}</span>
+                                </div>
+                                <div class="route-path">
+                                    <div class="route-point start">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <span>{{ route.start_address }}</span>
+                                    </div>
+                                    <div class="route-line">
+                                        <div class="route-line-inner"></div>
+                                    </div>
+                                    <div class="route-point end">
+                                        <i class="fas fa-flag-checkered"></i>
+                                        <span>{{ route.end_address }}</span>
+                                    </div>
+                                </div>
+                                <div class="route-stats">
+                                    <div class="stat">
+                                        <i class="fas fa-road"></i>
+                                        <span>{{ route.total_distance|floatformat:1 }} km</span>
+                                    </div>
+                                    <div class="stat">
+                                        <i class="fas fa-clock"></i>
+                                        <span>{{ route.total_duration|floatformat:0 }} dk</span>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data">
+                            <i class="fas fa-route"></i>
+                            <p>Henüz kaydedilmiş rota bulunmamaktadır.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Şarj Geçmişi -->
+            <div class="history-card charging-card">
+                <div class="card-header">
+                    <h3><i class="fas fa-charging-station"></i> Şarj Geçmişi</h3>
+                </div>
+                <div class="charging-container">
+                    {% if charging_history %}
+                        {% for charge in charging_history %}
+                            <div class="charging-item">
+                                <div class="charging-header">
+                                    <span class="charging-date"><i class="fas fa-calendar"></i> {{ charge.tarih|date:"d/m/Y H:i" }}</span>
+                                    <span class="charging-provider">{{ charge.firma }}</span>
+                                </div>
+                                <div class="charging-details">
+                                    <div class="car-details">
+                                        <div class="car-detail-item">
+                                            <i class="fas fa-car"></i>
+                                            <span>{{ charge.arac }}</span>
+                                        </div>
+                                        <div class="car-detail-item">
+                                            <i class="fas fa-battery-full"></i>
+                                            <span>{{ charge.arac_kwh }} kWh</span>
+                                        </div>
+                                    </div>
+                                    <div class="charging-progress">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" data-start="{{ charge.baslangic_sarj }}" data-end="{{ charge.varis_sarj }}"></div>
+                                        </div>
+                                        <div class="progress-labels">
+                                            <span>{{ charge.baslangic_sarj }}%</span>
+                                            <span>{{ charge.varis_sarj }}%</span>
+                                        </div>
+                                    </div>
+                                    <div class="charging-stats">
+                                        <div class="stat">
+                                            <i class="fas fa-bolt"></i>
+                                            <span>{{ charge.doldurulan_enerji|floatformat:1 }} kWh</span>
+                                        </div>
+                                        <div class="stat">
+                                            <i class="fas fa-lira-sign"></i>
+                                            <span>{{ charge.toplam_ucret|floatformat:2 }} TL</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data">
+                            <i class="fas fa-battery-empty"></i>
+                            <p>Henüz kaydedilmiş şarj geçmişi bulunmamaktadır.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tüm şarj kartlarını göster
+            const chargingItems = document.querySelectorAll('.charging-item');
+            chargingItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.classList.add('show');
+                }, 100 * index);
+            });
+            
+            // Rota kartları için animasyon
+            const routeItems = document.querySelectorAll('.route-item');
+            routeItems.forEach((item, index) => {
+                setTimeout(() => {
+                    item.classList.add('show');
+                }, 100 * index);
+            });
+            
+            // İlerleme çubuklarını ayarla - Bitiş şarj yüzdesine göre
+            const progressFills = document.querySelectorAll('.progress-fill');
+            progressFills.forEach(fill => {
+                const startPercentage = parseInt(fill.getAttribute('data-start')) || 0;
+                const endPercentage = parseInt(fill.getAttribute('data-end')) || 0;
+                
+                // Bitiş şarj yüzdesine göre ilerleme çubuğunu ayarla
+                if (endPercentage > 0) {
+                    // İlerleme çubuğunu animasyonlu olarak doldur
+                    fill.style.width = '0%'; // Başlangıçta sıfır
+                    
+                    // Kısa bir gecikme sonra animasyonu başlat
+                    setTimeout(() => {
+                        fill.style.width = endPercentage + '%';
+                        
+                        // Şarj seviyesine göre renk değişimi
+                        if (endPercentage < 20) {
+                            fill.style.background = 'linear-gradient(90deg, #e74c3c, #e67e22)'; // Kırmızı-turuncu (düşük şarj)
+                        } else if (endPercentage < 50) {
+                            fill.style.background = 'linear-gradient(90deg, #e67e22, #f1c40f)'; // Turuncu-sarı (orta şarj)
+                        } else if (endPercentage < 80) {
+                            fill.style.background = 'linear-gradient(90deg, #f1c40f, #2ecc71)'; // Sarı-yeşil (iyi şarj)
+                        } else {
+                            fill.style.background = 'linear-gradient(90deg, #2ecc71, #27ae60)'; // Yeşil (tam şarj)
+                        }
+                    }, 300);
+                } else {
+                    fill.style.width = '0%';
+                }
+                
+                // Başlangıç şarj seviyesini göstermek için arka plan çizgisi ekle
+                const progressBar = fill.parentElement;
+                const startLine = document.createElement('div');
+                startLine.className = 'start-line';
+                startLine.style.left = startPercentage + '%';
+                progressBar.appendChild(startLine);
+            });
+        });
+    </script>
+</body>
+</html>

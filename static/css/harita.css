@@ -1,0 +1,1173 @@
+:root {
+  --primary-blue: #1e88e5;
+  --secondary-blue: #0d47a1;
+  --accent-blue: #64b5f6;
+  --dark-bg: #1a1a2e;
+  --dark-panel: #222831;
+  --medium-gray: #393e46;
+  --light-gray: #eeeeee;
+  --white: #ffffff;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --transition: all 0.3s ease;
+  --success-green: #4caf50;
+  --warning-orange: #ff9800;
+  --danger-red: #f44336;
+  --panel-width: 420px; /* Increased panel width */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(rgba(26, 26, 46, 0.95), rgba(26, 26, 46, 0.95)), url("../resimler/arac.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  color: var(--white);
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 70% 30%;
+  height: calc(100vh - 70px);
+  padding: 20px;
+  gap: 20px;
+  max-width: 1800px;
+  margin: 0 auto;
+  transition: all 0.4s ease;
+  align-items: stretch;
+}
+
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+  }
+}
+
+#map-section {
+  background-color: var(--dark-panel);
+  border-radius: 12px;
+  box-shadow: var(--box-shadow);
+  padding: 15px;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  width: 100% !important; /* Remove the width transition to prevent map resizing */
+}
+
+/* Prevent map section from resizing when panel is active */
+#map-section.panel-active {
+  width: 100% !important; /* Keep the map at full width */
+}
+
+#controls-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--dark-panel);
+  border-radius: 12px;
+  box-shadow: 8px 0 24px -8px rgba(30, 136, 229, 0.15), var(--box-shadow);
+  transition: all 0.4s ease;
+  margin-left: 8px;
+  border-left: 2px solid var(--medium-gray);
+}
+
+#controls-section::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+
+#controls-section::-webkit-scrollbar-track {
+  background: var(--medium-gray);
+  border-radius: 8px;
+}
+
+#controls-section::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary-blue), var(--secondary-blue));
+  border-radius: 8px;
+  min-height: 40px;
+  border: 2px solid var(--dark-panel);
+}
+
+#map {
+  height: 100%;
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.4s ease;
+}
+
+#controls,
+#legend,
+#directionsPanel,
+#weatherInfo {
+  background-color: var(--dark-panel);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: var(--box-shadow);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+#controls:hover,
+#legend:hover,
+#directionsPanel:hover,
+#weatherInfo:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.section-title {
+  color: var(--primary-blue);
+  margin: 0 0 15px 0;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid var(--medium-gray);
+  padding-bottom: 10px;
+}
+
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.input-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--primary-blue);
+}
+
+.controls {
+  background-color: var(--medium-gray);
+  border: 1px solid transparent;
+  color: var(--white);
+  padding: 12px 12px 12px 40px;
+  width: 100%;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.controls:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.3);
+}
+
+.controls::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+button {
+  border: none;
+  padding: 12px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.primary-button {
+  background-color: var(--primary-blue);
+  color: var(--white);
+  flex: 1;
+}
+
+.secondary-button {
+  background-color: var(--medium-gray);
+  color: var(--white);
+  flex: 1;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.primary-button:hover {
+  background-color: var(--secondary-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(30, 136, 229, 0.3);
+}
+
+.secondary-button:hover {
+  background-color: #4a4f57;
+  transform: translateY(-2px);
+}
+
+/* Buton tıklama efekti */
+button:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+button:focus:not(:active)::after {
+  animation: ripple 0.6s ease-out;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  20% {
+    transform: scale(25, 25);
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(40, 40);
+  }
+}
+
+.charging-section {
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid var(--medium-gray);
+}
+
+.battery-input {
+  margin-top: 15px;
+}
+
+.battery-input label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  color: var(--accent-blue);
+  font-size: 14px;
+}
+
+.battery-input input {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--medium-gray);
+  border: 1px solid transparent;
+  color: var(--white);
+  border-radius: 8px;
+  transition: var(--transition);
+}
+
+.battery-input input:focus {
+  outline: none;
+  border-color: var(--primary-blue);
+  box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.3);
+}
+
+#legend {
+  margin-top: 0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+  padding: 8px;
+  background-color: var(--medium-gray);
+  border-radius: 6px;
+  transition: transform 0.2s ease;
+}
+
+.legend-item:hover {
+  transform: translateX(5px);
+}
+
+#directionsPanel {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 300px;
+  max-height: 500px;
+}
+
+#directionsPanel::-webkit-scrollbar {
+  width: 6px;
+}
+
+#directionsPanel::-webkit-scrollbar-track {
+  background: var(--medium-gray);
+  border-radius: 3px;
+}
+
+#directionsPanel::-webkit-scrollbar-thumb {
+  background: var(--primary-blue);
+  border-radius: 3px;
+}
+
+/* Rota bilgileri için ek stiller */
+.adp-placemark {
+  background-color: var(--primary-blue) !important;
+  border: none !important;
+  color: var(--white) !important;
+  margin: 10px 0 !important;
+  border-radius: 8px !important;
+  padding: 12px !important;
+  transition: transform 0.2s ease !important;
+}
+
+.adp-placemark:hover {
+  transform: translateX(5px) !important;
+}
+
+.adp-summary {
+  background-color: var(--medium-gray) !important;
+  color: var(--white) !important;
+  padding: 12px !important;
+  border-radius: 8px !important;
+  font-size: 15px !important;
+  margin: 10px 0 !important;
+  transition: transform 0.2s ease !important;
+}
+
+.adp-summary:hover {
+  transform: translateX(5px) !important;
+}
+
+.adp-legal {
+  color: var(--light-gray) !important;
+  font-size: 12px !important;
+  margin-top: 10px !important;
+}
+
+.adp-directions {
+  width: 100% !important;
+  margin: 15px 0 !important;
+  border-collapse: separate !important;
+  border-spacing: 0 5px !important;
+}
+
+.adp-directions th {
+  background-color: var(--medium-gray) !important;
+  color: var(--primary-blue) !important;
+  padding: 10px !important;
+  text-align: left !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+.adp-directions td {
+  background-color: var(--medium-gray) !important;
+  color: var(--white) !important;
+  padding: 12px !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  transition: background-color 0.2s ease !important;
+}
+
+.adp-directions tr:hover td {
+  background-color: #424852 !important;
+}
+
+.adp-maneuver {
+  font-weight: 600 !important;
+  color: var(--accent-blue) !important;
+}
+
+.adp-substep {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+  padding: 8px !important;
+}
+
+/* Google DirectionsService tarafından oluşturulan elementler için stiller */
+.adp,
+.adp table {
+  color: var(--white) !important;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+.adp-step,
+.adp-substep {
+  background-color: var(--medium-gray) !important;
+  border-radius: 6px !important;
+  margin-bottom: 5px !important;
+  padding: 10px !important;
+  transition: transform 0.2s ease, background-color 0.2s ease !important;
+}
+
+.adp-step:hover,
+.adp-substep:hover {
+  transform: translateX(5px) !important;
+  background-color: #424852 !important;
+}
+
+.adp-distance {
+  color: var(--accent-blue) !important;
+  font-weight: 600 !important;
+}
+
+.adp-agencies {
+  font-size: 12px !important;
+  margin-top: 10px !important;
+  color: var(--light-gray) !important;
+}
+
+/* Google Maps Info Window stilleri */
+.gm-style .gm-style-iw-c {
+  padding: 0 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  background-color: var(--dark-panel) !important;
+  overflow: visible !important;
+  max-width: 400px !important;
+  min-width: 280px !important;
+}
+
+.gm-style .gm-style-iw-d {
+  overflow: auto !important;
+  padding: 15px !important;
+  background-color: var(--dark-panel) !important;
+  max-height: 400px !important;
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary-blue) var(--medium-gray);
+}
+
+.gm-style .gm-style-iw-d::-webkit-scrollbar {
+  width: 8px;
+}
+
+.gm-style .gm-style-iw-d::-webkit-scrollbar-track {
+  background: var(--medium-gray);
+  border-radius: 3px;
+}
+
+.gm-style .gm-style-iw-d::-webkit-scrollbar-thumb {
+  background: var(--primary-blue);
+  border-radius: 3px;
+}
+
+.gm-style .gm-style-iw-t::after {
+  background: linear-gradient(45deg, var(--dark-panel) 50%, transparent 51%) !important;
+}
+
+/* Info Window içeriği için stiller */
+.gm-iw {
+  max-width: 100% !important;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif !important;
+  color: var(--white) !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  padding: 10px !important;
+}
+
+.gm-iw b,
+.gm-iw strong {
+  font-size: 18px !important;
+  color: var(--primary-blue) !important;
+  display: block !important;
+  margin-bottom: 8px !important;
+  font-weight: 600 !important;
+}
+
+.gm-iw div {
+  margin: 10px 0 !important;
+  color: var(--light-gray) !important;
+  font-size: 15px !important;
+}
+
+/* Kapatma butonu stillerini düzenliyorum */
+.gm-ui-hover-effect {
+  background-color: rgba(30, 136, 229, 0.3) !important;
+  border-radius: 50% !important;
+  right: 8px !important;
+  top: 8px !important;
+  opacity: 0.8 !important;
+  transition: var(--transition) !important;
+}
+
+.gm-ui-hover-effect:hover {
+  background-color: rgba(30, 136, 229, 0.5) !important;
+  opacity: 1 !important;
+  transform: rotate(90deg) !important;
+}
+
+/* İlave rota yönergeleri stillerini ekliyorum */
+.adp-directions .adp-placemark {
+  font-weight: 600 !important;
+  font-size: 16px !important;
+}
+
+.gm-style-iw-a {
+  z-index: 9999 !important;
+}
+
+.info-window-content {
+  background-color: var(--dark-panel);
+  padding: 0;
+  border-radius: 10px;
+  min-width: 250px;
+  overflow: hidden;
+  color: var(--white);
+}
+
+.info-header {
+  background-color: var(--primary-blue);
+  padding: 15px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.info-header h3 {
+  color: var(--white);
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  text-shadow: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.info-header .close-button {
+  background: rgba(0, 0, 0, 0.2);
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+  transition: var(--transition);
+}
+
+.info-header .close-button:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: rotate(90deg);
+}
+
+.info-content {
+  padding: 15px;
+  background-color: var(--dark-panel);
+}
+
+.info-content p {
+  color: var(--white);
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  text-shadow: none;
+  font-weight: normal;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.station-vicinity,
+.restaurant-vicinity {
+  color: var(--light-gray) !important;
+}
+
+.station-coordinates {
+  font-family: monospace;
+  font-size: 13px !important;
+  color: var(--accent-blue) !important;
+}
+
+.station-rating,
+.restaurant-rating {
+  color: #ffc107 !important;
+}
+
+.star-icon {
+  color: #ffc107;
+  margin-right: 2px;
+}
+
+.info-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.action-btn {
+  flex: 1;
+  padding: 10px;
+  background-color: var(--primary-blue);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: normal;
+  text-shadow: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.action-btn:hover {
+  background-color: var(--secondary-blue);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(30, 136, 229, 0.3);
+}
+
+.action-btn:after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%, -50%);
+  transform-origin: 50% 50%;
+}
+
+.action-btn:focus:not(:active)::after {
+  animation: ripple 0.6s ease-out;
+}
+
+/* Doluluk durumu stilleri */
+.occupancy-info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 15px 0;
+  padding: 10px;
+  background-color: var(--medium-gray);
+  border-radius: 8px;
+}
+
+.occupancy-text {
+  color: var(--light-gray);
+  font-size: 14px;
+}
+
+.occupancy-status {
+  display: flex;
+  gap: 4px;
+}
+
+.occupancy-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: var(--transition);
+}
+
+.occupancy-dot.active {
+  background-color: var(--success-green);
+  box-shadow: 0 0 5px var(--success-green);
+}
+
+.occupancy-full {
+  color: var(--danger-red);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+/* Dialog stilleri */
+.custom-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s ease;
+}
+
+/* Mobil görünüm için düzenlemeler */
+@media (max-width: 1200px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 50vh auto;
+  }
+
+  #directionsPanel {
+    min-height: 250px;
+    max-height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+    grid-template-rows: 50vh auto;
+    padding: 10px;
+    gap: 10px;
+  }
+  #controls-section {
+    height: auto;
+    max-height: unset;
+    border-radius: 10px;
+  }
+
+  .button-group {
+    flex-direction: column;
+  }
+
+  #directionsPanel {
+    min-height: 200px;
+  }
+}
+
+.cities-info {
+  background-color: var(--medium-gray);
+  border-left: 4px solid #4caf50; /* Yeşil vurgu */
+  padding: 12px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.cities-info:hover {
+  transform: translateX(5px);
+}
+
+.cities-info h4 {
+  color: #4caf50;
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cities-list {
+  font-size: 15px;
+  color: var(--white);
+  line-height: 1.5;
+  word-wrap: break-word;
+  padding: 5px 0;
+}
+
+/* Yeni eklenen animasyonlar */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Yeni eklenen sağdan kayma animasyonu */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* Harita ve panel arasındaki geçiş için */
+.map-with-panel {
+  width: 100% !important;
+  transition: none !important; /* Remove transition to prevent resizing */
+}
+
+.map-with-panel.panel-active {
+  width: 100% !important; /* Keep full width */
+}
+
+/* Event Suggestions Panel Styles - Refined */
+.event-suggestions-panel {
+  position: fixed !important;
+  top: 0 !important;
+  right: calc(-1 * var(--panel-width)) !important; /* Use CSS variable for width */
+  width: var(--panel-width) !important; /* Increased width */
+  height: 100vh !important;
+  background-color: var(--dark-panel) !important;
+  box-shadow: -8px 0 25px rgba(0, 0, 0, 0.3) !important; /* Enhanced shadow */
+  z-index: 1001 !important; /* Higher z-index to ensure it's on top */
+  transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important; /* Smoother transition */
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border-left: 2px solid var(--primary-blue) !important; /* Add left border */
+}
+
+.event-suggestions-panel.active {
+  right: 0 !important;
+}
+
+.event-panel-header {
+  background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)) !important; /* Gradient background */
+  padding: 20px !important; /* Increased padding */
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+.event-panel-header h3 {
+  color: #ffffff !important;
+  margin: 0 !important;
+  font-size: 20px !important; /* Slightly larger font */
+  font-weight: 600 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  flex: 1 !important; /* Take up available space */
+}
+
+.event-panel-close {
+  background: rgba(255, 255, 255, 0.15) !important; /* More visible background */
+  color: white !important;
+  border: none !important;
+  width: 36px !important; /* Slightly larger */
+  height: 36px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  font-size: 16px !important; /* Larger icon */
+  transition: all 0.3s ease !important;
+  margin-left: 15px !important; /* Add some space from the title */
+}
+
+.event-panel-close:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+  transform: rotate(90deg) scale(1.1) !important; /* Add scale effect */
+}
+
+.event-panel-content {
+  flex: 1 !important;
+  overflow-y: auto !important;
+  padding: 20px !important; /* Increased padding */
+  background: linear-gradient(180deg, var(--dark-panel), #1a1f26) !important; /* Subtle gradient */
+}
+
+.event-panel-content::-webkit-scrollbar {
+  width: 10px !important; /* Slightly wider scrollbar */
+  background: transparent !important;
+}
+
+.event-panel-content::-webkit-scrollbar-track {
+  background: var(--medium-gray) !important;
+  border-radius: 10px !important;
+  margin: 10px 0 !important;
+}
+
+.event-panel-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--primary-blue), var(--secondary-blue)) !important;
+  border-radius: 10px !important;
+  min-height: 40px !important;
+  border: 2px solid var(--dark-panel) !important;
+}
+
+.event-panel-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--accent-blue), var(--primary-blue)) !important;
+}
+
+.suggestions-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 18px !important; /* Increased gap */
+}
+
+.event-item {
+  background: linear-gradient(145deg, var(--medium-gray), #2a2f36) !important; /* Subtle gradient */
+  border-radius: 12px !important; /* More rounded corners */
+  padding: 18px !important; /* Increased padding */
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15) !important; /* Enhanced shadow */
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important; /* Subtle border */
+}
+
+.event-item:hover {
+  transform: translateY(-4px) !important; /* More pronounced lift */
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+  border-color: rgba(30, 136, 229, 0.3) !important; /* Blue border on hover */
+}
+
+.event-title {
+  color: var(--accent-blue) !important;
+  margin: 0 0 12px 0 !important;
+  font-size: 18px !important; /* Larger font */
+  font-weight: 600 !important;
+  line-height: 1.3 !important;
+}
+
+.event-description {
+  color: #e8e8e8 !important; /* Slightly brighter text */
+  margin: 0 0 16px 0 !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important; /* Better line height */
+}
+
+.event-meta {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  margin-bottom: 16px !important;
+}
+
+.event-location,
+.event-distance {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #d0d0d0 !important; /* Brighter meta text */
+  font-size: 13px !important;
+  background-color: rgba(0, 0, 0, 0.3) !important; /* Darker background */
+  padding: 6px 12px !important;
+  border-radius: 20px !important; /* More rounded */
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.event-actions {
+  display: flex !important;
+  gap: 12px !important; /* Increased gap */
+}
+
+.event-btn {
+  flex: 1 !important;
+  padding: 12px 16px !important; /* Increased padding */
+  border: none !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  transition: all 0.3s ease !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.event-btn-primary {
+  background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 3px 8px rgba(30, 136, 229, 0.3) !important;
+}
+
+.event-btn-primary:hover {
+  background: linear-gradient(135deg, var(--secondary-blue), #0a3d91) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 5px 15px rgba(30, 136, 229, 0.4) !important;
+}
+
+.event-btn-secondary {
+  background: linear-gradient(135deg, var(--medium-gray), #4a4f57) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.event-btn-secondary:hover {
+  background: linear-gradient(135deg, #4a4f57, #5a5f67) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Loading and error states */
+.loading-container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 40px 20px !important; /* Increased padding */
+  color: #ffffff !important;
+  text-align: center !important;
+}
+
+.loading-spinner {
+  width: 50px !important; /* Larger spinner */
+  height: 50px !important;
+  border: 4px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 50% !important;
+  border-top-color: var(--primary-blue) !important;
+  animation: spin 1s ease-in-out infinite !important;
+  margin-bottom: 20px !important;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-message {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  padding: 25px !important; /* Increased padding */
+  background: linear-gradient(135deg, rgba(244, 67, 54, 0.1), rgba(244, 67, 54, 0.05)) !important;
+  border-left: 4px solid #f44336 !important;
+  border-radius: 10px !important;
+  color: #ffffff !important;
+  text-align: center !important;
+}
+
+.error-message i {
+  font-size: 28px !important; /* Larger icon */
+  color: #f44336 !important;
+  margin-bottom: 15px !important;
+}
+
+/* Success toast */
+.success-toast {
+  position: fixed !important;
+  bottom: 30px !important; /* Moved up slightly */
+  left: 50% !important;
+  transform: translateX(-50%) translateY(100px) !important;
+  background: linear-gradient(135deg, var(--success-green), #45a049) !important;
+  color: white !important;
+  padding: 15px 25px !important; /* Increased padding */
+  border-radius: 10px !important; /* More rounded */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important; /* Enhanced shadow */
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  z-index: 2000 !important;
+  opacity: 0 !important;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.success-toast.show {
+  transform: translateX(-50%) translateY(0) !important;
+  opacity: 1 !important;
+}
+
+.success-toast i {
+  font-size: 20px !important; /* Larger icon */
+}
+
+/* Suggestion info window styles */
+.suggestion-info-window .info-header {
+  background: linear-gradient(135deg, #9c27b0, #7b1fa2) !important; /* Purple gradient for suggestion markers */
+}
+
+.suggestion-info-window .action-btn {
+  background: linear-gradient(135deg, #9c27b0, #7b1fa2) !important;
+}
+
+.suggestion-info-window .action-btn:hover {
+  background: linear-gradient(135deg, #7b1fa2, #6a1b9a) !important;
+}
+
+/* Responsive adjustments for the panel */
+@media (max-width: 1200px) {
+  :root {
+    --panel-width: 380px; /* Slightly smaller on medium screens */
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --panel-width: 350px; /* Smaller on mobile */
+  }
+
+  .event-panel-header {
+    padding: 15px !important;
+  }
+
+  .event-panel-content {
+    padding: 15px !important;
+  }
+
+  .event-item {
+    padding: 15px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --panel-width: 320px; /* Even smaller on very small screens */
+  }
+}
+
+/* Add overlay effect when panel is open */
+.event-suggestions-panel.active::before {
+  content: "" !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: var(--panel-width) !important;
+  bottom: 0 !important;
+  background: rgba(0, 0, 0, 0.1) !important; /* Very subtle overlay */
+  z-index: -1 !important;
+  pointer-events: none !important;
+}
+
+/* Introductory text styling */
+.intro-text {
+  background: linear-gradient(135deg, rgba(30, 136, 229, 0.1), rgba(13, 71, 161, 0.05)) !important;
+  border-left: 4px solid var(--primary-blue) !important;
+  border-radius: 8px !important;
+  padding: 15px !important;
+  margin-bottom: 20px !important;
+  color: var(--accent-blue) !important;
+  font-style: italic !important;
+  text-align: center !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}

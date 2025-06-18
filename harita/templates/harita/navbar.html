@@ -1,0 +1,24 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="{% url 'hakkimizda:hakkimizda' %}" class="nav-brand">
+            <i class="fas fa-car-side"></i> Yol Arkadaşım
+        </a>
+        <div class="nav-links">
+            <a href="{% url 'harita:harita_view' %}" class="nav-link {% if request.resolver_match.app_name == 'harita' %}active{% endif %}">
+                <i class="fas fa-map-marked-alt"></i> Harita
+            </a>
+            <a href="{% url 'kullanicibilgileri:kullanici_bilgileri' %}" class="nav-link {% if request.resolver_match.app_name == 'kullanicibilgileri' %}active{% endif %}">
+                <i class="fas fa-user-circle"></i> Kullanıcı Bilgileri
+            </a>
+            <a href="{% url 'sarjucret:sarj_ucret' %}" class="nav-link {% if request.resolver_match.app_name == 'sarjucret' %}active{% endif %}">
+                <i class="fas fa-bolt"></i> Şarj Ücreti Hesaplama
+            </a>
+            <a href="{% url 'hakkimizda:hakkimizda' %}" class="nav-link {% if request.resolver_match.app_name == 'hakkimizda' %}active{% endif %}">
+                <i class="fas fa-info-circle"></i> Hakkımızda
+            </a>
+        </div>
+    </div>
+</nav>

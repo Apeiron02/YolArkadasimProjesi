@@ -1,0 +1,123 @@
+:root {
+  --primary-color: #00a8e8;
+  --secondary-color: #0077b6;
+  --accent-color: #ff6b00;
+  --dark-bg: #1a2639;
+  --panel-bg: #1e2d42;
+  --card-bg: #263a52;
+  --light-text: #ffffff;
+  --muted-text: #a0b4c8;
+  --border-radius: 12px;
+  --box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  --transition: all 0.3s ease;
+}
+
+.navbar {
+  background-color: var(--panel-bg);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 70px;
+}
+
+.nav-brand {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  transition: var(--transition);
+}
+
+.nav-brand i {
+  margin-right: 10px;
+  font-size: 24px;
+}
+
+.nav-brand:hover {
+  color: var(--accent-color);
+}
+
+.nav-links {
+  display: flex;
+  gap: 5px;
+}
+
+.nav-link {
+  color: var(--light-text);
+  text-decoration: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+}
+
+.nav-link i {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--primary-color);
+}
+
+.nav-link.active {
+  background-color: rgba(0, 168, 232, 0.15);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+/* Responsive tasarım */
+@media (max-width: 768px) {
+  .nav-container {
+    flex-direction: column;
+    height: auto;
+    padding: 16px;
+  }
+
+  .nav-brand {
+    margin-bottom: 16px;
+  }
+
+  .nav-links {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .nav-link {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .nav-link i {
+    margin-right: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-links {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .nav-link {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+}

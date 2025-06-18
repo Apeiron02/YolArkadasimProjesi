@@ -1,0 +1,102 @@
+*{
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+
+}
+body{
+    background: url(resimler/arac.png);
+    background-size: cover
+
+
+}
+.header{
+    height: 100px;
+    background: #5e636b;
+    padding: 0 20px;
+    color: #f3f3f3;
+
+}
+.logo{
+    line-height: 100px;
+    float: left;
+    cursor: pointer;
+
+}
+.menu{
+    float: right;
+    line-height: 100px;
+
+
+}
+.menu a:hover{
+    color: #e36d00;
+}
+.menu a{
+    color: #f3f3f3;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 0 10px;
+    transition: 0.4s;
+}
+
+
+.content{
+    padding: 0 20px;
+
+}
+.content img{
+    width: 100%;
+    max-width: 700px;
+    margin: 20px;
+    
+}
+.content p{
+    text-align: justify;
+}
+
+
+
+.profile-container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.profile-container h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.profile-container label {
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
+}
+
+.profile-container input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.profile-container button {
+    padding: 10px 20px;
+    background-color: #5e636b;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.profile-container button:hover {
+    background-color: #e36d00;
+}

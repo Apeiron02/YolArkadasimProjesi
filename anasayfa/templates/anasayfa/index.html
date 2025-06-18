@@ -1,0 +1,20 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elektrikli Araç Rota Planlayıcı</title>
+    <link rel="stylesheet" href="{% static 'css/anasayfa.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Elektrikli Araç Rota Planlayıcı</h1>
+        <p class="subtitle">Yolculuğunuzu akıllıca planlayın</p>
+        <div class="button-container">
+            <a href="{% url 'giris' %}" class="button login-btn">Giriş Yap</a>
+            <a href="{% url 'kayitol' %}" class="button register-btn">Kayıt Ol</a>
+        </div>
+    </div>
+</body>
+</html>

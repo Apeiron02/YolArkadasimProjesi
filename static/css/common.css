@@ -1,0 +1,130 @@
+:root {
+    --primary-blue: #1e88e5;
+    --secondary-blue: #0d47a1;
+    --accent-blue: #64b5f6;
+    --dark-bg: #1a1a2e;
+    --dark-panel: #222831;
+    --medium-gray: #393e46;
+    --light-gray: #eeeeee;
+    --white: #ffffff;
+    --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    --transition: all 0.3s ease;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(rgba(26, 26, 46, 0.95), rgba(26, 26, 46, 0.95)), url("../resimler/arac.png");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: var(--white);
+    min-height: 100vh;
+  }
+  
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .card {
+    background-color: var(--dark-panel);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: var(--box-shadow);
+    margin-bottom: 20px;
+  }
+  
+  .card-title {
+    color: var(--primary-blue);
+    margin: 0 0 15px 0;
+    font-size: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 2px solid var(--medium-gray);
+    padding-bottom: 10px;
+  }
+  
+  .btn {
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: var(--transition);
+    text-decoration: none;
+  }
+  
+  .btn-primary {
+    background-color: var(--primary-blue);
+    color: var(--white);
+  }
+  
+  .btn-secondary {
+    background-color: var(--medium-gray);
+    color: var(--white);
+  }
+  
+  .btn-primary:hover {
+    background-color: var(--secondary-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(30, 136, 229, 0.3);
+  }
+  
+  .btn-secondary:hover {
+    background-color: #4a4f57;
+    transform: translateY(-2px);
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--accent-blue);
+    font-size: 14px;
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 12px;
+    background-color: var(--medium-gray);
+    border: 1px solid transparent;
+    color: var(--white);
+    border-radius: 8px;
+    transition: var(--transition);
+    font-size: 14px;
+  }
+  
+  .form-control:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.3);
+  }
+  
+  /* Responsive Tasarım */
+  @media (max-width: 768px) {
+    .container {
+      padding: 15px;
+    }
+  
+    .card {
+      padding: 15px;
+    }
+  
+    .btn {
+      width: 100%;
+    }
+  }
+  

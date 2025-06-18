@@ -1,0 +1,422 @@
+/* Google Maps Info Window styles */
+.gm-style .gm-style-iw-c {
+  padding: 0 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2) !important;
+  background-color: #222831 !important;
+  overflow: hidden !important;
+  max-width: 280px !important;
+}
+
+.gm-style .gm-style-iw-d {
+  overflow: hidden !important;
+  padding: 0 !important;
+  background-color: #222831 !important;
+  max-height: none !important;
+}
+
+.gm-style .gm-style-iw-t::after {
+  background: linear-gradient(45deg, #222831 50%, transparent 51%) !important;
+}
+
+/* Google Maps'in varsayılan kapatma butonunu tamamen gizle */
+.gm-ui-hover-effect {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Google Maps'in kapatma butonu için ek gizleme */
+button[title="Close"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Info Window Content Styles - Sadece .info-window-content sınıfına sahip elementlere uygula */
+.info-window-content {
+  background-color: #222831;
+  padding: 0;
+  border-radius: 10px;
+  min-width: 240px;
+  max-width: 280px;
+  overflow: hidden;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.info-window-content .info-header {
+  background-color: #1e88e5;
+  padding: 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.info-window-content .info-header h3 {
+  color: #ffffff;
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.info-window-content .info-content {
+  padding: 12px;
+  background-color: #222831;
+}
+
+.info-window-content .info-section {
+  margin-bottom: 12px;
+}
+
+.info-window-content .info-content p {
+  color: #ffffff;
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Close button style - Sadece info-window-content içindeki butonlara uygula */
+.info-window-content .info-header .close-btn {
+  background: rgba(0, 0, 0, 0.2);
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  margin-left: 6px;
+  z-index: 10;
+}
+
+.info-window-content .info-header .close-btn:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: rotate(90deg);
+}
+
+.info-window-content .info-header .close-btn i {
+  font-size: 12px;
+  display: block !important;
+  line-height: 1;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.info-window-content .info-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.info-window-content .action-btn {
+  flex: 1;
+  padding: 10px;
+  background-color: #1e88e5;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+}
+
+/* Doluluk Durumu Göstergesi - Sadece info-window-content içindeki elementlere uygula */
+.info-window-content .occupancy-info {
+  background-color: #393e46;
+  border-radius: 6px;
+  padding: 10px;
+  margin: 8px 0;
+}
+
+.info-window-content .occupancy-text {
+  display: block;
+  font-size: 12px;
+  color: #64b5f6;
+  margin-bottom: 6px;
+}
+
+.info-window-content .occupancy-status {
+  display: flex;
+  gap: 4px;
+}
+
+.info-window-content .occupancy-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+/* Özel Dialog Stilleri - Ayrı bir stil bloğu olarak tanımla */
+.custom-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease;
+  backdrop-filter: blur(3px);
+}
+
+.custom-dialog {
+  background-color: #222831;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 600px;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dialog-header {
+  background-color: #1e88e5;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dialog-header h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dialog-icon {
+  font-size: 22px;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog-content {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+  color: #ffffff;
+}
+
+.dialog-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dialog-content::-webkit-scrollbar-track {
+  background: #222831;
+  border-radius: 3px;
+}
+
+.dialog-content::-webkit-scrollbar-thumb {
+  background: #1e88e5;
+  border-radius: 3px;
+}
+
+.dialog-message {
+  margin: 0 0 15px 0;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.dialog-question {
+  font-weight: 500;
+  margin: 15px 0;
+}
+
+.dialog-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: flex-end;
+}
+
+.dialog-button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.confirm-btn {
+  background-color: #1e88e5;
+  color: #ffffff;
+}
+
+.confirm-btn:hover {
+  background-color: #0d47a1;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(30, 136, 229, 0.3);
+}
+
+.cancel-btn {
+  background-color: #393e46;
+  color: #ffffff;
+}
+
+.error-btn {
+  background-color: #f44336;
+  color: #ffffff;
+}
+
+.cancel-btn:hover {
+  background-color: #4a4f57;
+  transform: translateY(-2px);
+}
+
+.error-btn:hover {
+  background-color: #d32f2f;
+  transform: translateY(-2px);
+}
+
+.stations-list {
+  background-color: #393e46;
+  border-radius: 8px;
+  padding: 15px;
+  margin: 15px 0;
+}
+
+.list-title {
+  margin: 0 0 10px 0;
+  font-weight: 500;
+  color: #64b5f6;
+}
+
+.station-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.station-item:last-child {
+  border-bottom: none;
+}
+
+.station-number {
+  font-weight: 600;
+  margin-right: 10px;
+  color: #1e88e5;
+}
+
+.station-name {
+  flex: 1;
+}
+
+.station-distance {
+  color: #64b5f6;
+  font-size: 13px;
+  margin: 0 10px;
+}
+
+.station-occupancy {
+  display: flex;
+  gap: 3px;
+}
+
+.custom-dialog .occupancy-dot {
+  width: 8px;
+  height: 8px;
+}
+
+/* Hata Dialog Stilleri */
+.custom-dialog.error .dialog-header {
+  background-color: #f44336;
+}
+
+/* Animasyonlar */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Paneli haritanın üstüne bindir, harita genişliğini değiştirme */
+.event-suggestions-panel {
+  position: fixed;
+  top: 70px; /* Navbar yüksekliği */
+  right: 0;
+  width: 400px;
+  max-width: 90vw;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 70px); /* Panel yüksekliğini tam kullan */
+}
+
+.map-with-panel {
+  width: 100% !important; /* Panel açıkken de harita tam genişlikte kalır */
+  transition: none !important;
+}
+
+.suggestions-list {
+  margin-top: 15px;
+  background-color: #393e46;
+  border-radius: 8px;
+  padding: 15px;
+  white-space: pre-line;
+  min-height: 200px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.event-panel-content {
+  padding: 20px;
+  flex: 1 1 auto; /* Tüm boşluğu kaplasın */
+  overflow-y: auto;
+  height: 100%;
+  min-height: 0;
+}

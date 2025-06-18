@@ -1,0 +1,518 @@
+/* Şarj Ücreti Hesaplama Sayfası Stilleri */
+
+/* Değişkenler */
+:root {
+    --bg-dark: #0f172a;
+    --bg-card: #1e293b;
+    --bg-input: #334155;
+    --bg-hover: #475569;
+    --border-color: #475569;
+    --text-light: #f1f5f9;
+    --text-muted: #cbd5e1;
+    --text-hint: #94a3b8;
+    --primary: #3b82f6;
+    --success: #4ade80;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --transition: all 0.3s ease;
+}
+
+/* Temel Stiller */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+h1, h2, h3, h4 {
+    color: var(--text-light);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+h1 svg, h2 svg {
+    margin-right: 10px;
+}
+
+/* Kart Stilleri */
+.content-card {
+    background: linear-gradient(to right, var(--bg-card), var(--bg-input));
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+
+.card-body {
+    padding: 25px;
+}
+
+.card-body h2 {
+    margin-top: 0;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+}
+
+/* Form Stilleri */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: var(--bg-input);
+    color: var(--text-light);
+    transition: var(--transition);
+}
+
+.form-group input::placeholder,
+.form-group select::placeholder {
+    color: var(--text-hint);
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    background-color: var(--bg-hover);
+}
+
+/* Select dropdown styling */
+.form-group select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+.form-group select option {
+    background-color: var(--bg-input);
+    color: var(--text-light);
+}
+
+/* Read-only input styling */
+.form-group input[readonly] {
+    background-color: var(--bg-card);
+    cursor: not-allowed;
+    border-color: var(--border-color);
+    opacity: 0.8;
+}
+
+.form-group .form-hint {
+    font-size: 0.8rem;
+    color: var(--text-hint);
+    margin-top: 5px;
+    display: block;
+}
+
+/* Range Input Stilleri */
+.range-container {
+    margin-bottom: 20px;
+}
+
+.range-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.range-value {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+input[type="range"] {
+    width: 100%;
+    height: 8px;
+    background-color: var(--border-color);
+    border-radius: 4px;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    margin-bottom: 8px;
+}           
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background-color: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+    margin-top: -4px;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background-color: var(--primary);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-hint);
+}
+
+/* Buton Stilleri */
+.btn {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.btn svg {
+    margin-right: 8px;
+}
+
+.btn:hover {
+    background-color: #2563eb;
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Şarj İstasyonu Seçim Stilleri */
+.sarj-istasyonu-secim {
+    margin-top: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: var(--bg-card);
+}
+
+.provider-tabs {
+    display: flex;
+    background-color: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.provider-tab {
+    padding: 12px 20px;
+    cursor: pointer;
+    color: var(--text-light);
+    font-weight: 600;
+    text-align: center;
+    flex: 1;
+    transition: var(--transition);
+    border-bottom: 2px solid transparent;
+}
+
+.provider-tab:hover {
+    background-color: var(--bg-input);
+}
+
+.provider-tab.active {
+    border-bottom-color: var(--primary);
+    background-color: var(--bg-card);
+}
+
+.provider-content {
+    position: relative;
+}
+
+.provider-panel {
+    display: none;
+    background-color: var(--bg-card);
+}
+
+.provider-panel.active {
+    display: block;
+}
+
+.fiyat-listesi {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Fiyat Seçim Stilleri */
+.fiyat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--bg-input);
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.fiyat-item:last-child {
+    border-bottom: none;
+}
+
+.fiyat-item:hover {
+    background-color: var(--bg-input);
+}
+
+.fiyat-item.selected {
+    background-color: var(--bg-input);
+    border-left: 3px solid #3b82f6;
+}
+.fiyat-tip {
+    color: #f1f5f9;
+    font-weight: 500;
+}
+
+.fiyat-deger {
+    color: #4ade80;
+    font-weight: bold;
+}
+
+/* Sonuç Bölümü Stilleri */
+.result-section {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #475569;
+    opacity: 0.7;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(10px);
+    display: none;
+}
+
+.result-section.active {
+    opacity: 1;
+    transform: translateY(0);
+    display: block;
+}
+
+/* CSS Dosyasında Değişiklikler
+/* Elektrik Fiyatı Seçim Alanı - Artık gerekli değil */
+.elektrik-fiyat-container {
+    position: relative;
+    display: none; /* Gizleyelim */
+}
+
+.elektrik-fiyat-container input[readonly] {
+    background-color: #1e293b;
+    cursor: default;
+}
+
+/* Responsive Düzenlemeler */
+@media (max-width: 768px) {
+    .provider-tabs {
+        flex-wrap: wrap;
+    }
+    
+    .provider-tab {
+        flex-basis: 50%;
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+    
+    .arac-sarj-bilgileri {
+        flex-direction: column;
+    }
+}
+
+.result-section h3 {
+    color: #f1f5f9;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.arac-sarj-bilgileri {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.arac-bilgi-karti {
+    flex: 1;
+    min-width: 250px;
+    padding: 16px;
+    background-color: #334155;
+    border-radius: 6px;
+    border: 1px solid #475569;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.arac-bilgi-karti:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+    background-color: #475569;
+}
+
+.arac-bilgi-karti h4 {
+    margin-top: 0;
+    color: #3b82f6;
+    border-bottom: 1px solid #475569;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.arac-bilgi-karti p {
+    margin: 8px 0;
+    color: #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+}
+
+.arac-bilgi-karti .etiket {
+    font-weight: 600;
+    color: #cbd5e1;
+}
+
+/* Sonuç değerleri için renk */
+#sarjenerji, #birimfiyat, #kmmaliyet {
+    color: #3b82f6;
+    font-weight: bold;
+}
+
+#sonuc {
+    color: #4ade80;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Info Box Stilleri */
+.info-box {
+    background-color: #334155;
+    border-left: 5px solid #3b82f6;
+    padding: 15px;
+    margin-bottom: 25px;
+    border-radius: 4px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.info-box svg {
+    color: #60a5fa;
+    margin-right: 12px;
+    flex-shrink: 0;
+    margin-top: 3px;
+}
+
+.info-box p {
+    margin: 0;
+    color: #cbd5e1;
+}
+
+/* Responsive Tasarım */
+@media (max-width: 768px) {
+    .container {
+        padding: 15px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    .card-body {
+        padding: 20px;
+    }
+    
+    .btn {
+        width: 100%;
+    }
+    
+    .arac-sarj-bilgileri {
+        flex-direction: column;
+    }
+}
+
+/* Footer Stilleri */
+footer {
+    text-align: center;
+    padding: 20px;
+    background-color: #1e293b;
+    color: #cbd5e1;
+    margin-top: 40px;
+}
+
+footer p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Select dropdown styling */
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #475569;
+    border-radius: 4px;
+    font-size: 1rem;
+    background-color: #334155;
+    color: #f1f5f9;
+    transition: all 0.3s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+.form-group select:focus {
+    border-color: #3b82f6;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    background-color: #475569;
+}
+
+.form-group select option {
+    background-color: #334155;
+    color: #f1f5f9;
+}
+
+/* Read-only input styling */
+.form-group input[readonly] {
+    background-color: #1e293b;
+    cursor: not-allowed;
+    border-color: #475569;
+    opacity: 0.8;
+}
+
+.form-group .form-hint {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 5px;
+    display: block;
+}

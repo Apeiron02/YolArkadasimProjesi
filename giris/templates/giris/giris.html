@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yol Arkadaşım</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'giris/style.css' %}">
+    
+    <!--
+    alt shift f kodları düzenlemek için
+    ctrl alt aşağı ok tuşu imleci arttırma
+    ctrl d aynı değişkeni birden fazla yerde seçip değiştirmek için kullanılır
+    -->
+</head>
+<body>
+    <div class="signup-form">
+        <h1>Giriş Yap</h1>
+        <form method="post" action="{% url 'giris' %}">
+            {% csrf_token %}
+            <label for="username">Kullanıcı Adı</label>
+            <input type="text" id="username" name="username" placeholder="İsminiz" required class="txt">
+            
+            <label for="password">Şifre</label>
+            <input type="password" id="password" name="password" placeholder="Şifre" required class="txt">
+            
+            <input type="submit" value="Giriş Yap" class="signup-btn">
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <p class="error-message">{{ message }}</p>
+                {% endfor %}
+            {% endif %}
+        </form>
+    </div>
+</body>
+</html>

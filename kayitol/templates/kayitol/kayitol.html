@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yol Arkadaşım</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'kayitol/style.css' %}">
+</head>
+<body>
+    <div class="signup-form">
+        <!-- Mesajları burada gösteriyoruz -->
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+
+        <form action="{% url 'kayitol' %}" method="post">
+            {% csrf_token %}
+            <h1>Kayıt Ol</h1>
+            <input type="text" name="username" placeholder="Kullanıcı Adı" class="txt" required>
+            <input type="email" name="email" placeholder="E-posta Adresi" class="txt" required>
+            <input type="password" name="password" placeholder="Şifre" class="txt" required>
+            <input type="submit" value="Hesap Oluştur" class="signup-btn">
+            <a href="/giris/">Zaten Üye Misiniz?</a>
+        </form>
+    </div>
+</body>
+</html>

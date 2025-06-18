@@ -1,0 +1,223 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harita</title>
+  <link rel="stylesheet" href="{% static 'css/harita.css' %}">
+  <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/info-windows.css' %}">
+  <!-- Font Awesome iconları -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  
+  <style>
+    /* Şehir bilgilendirme paneli için stiller */
+    .cities-info {
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        border-left: 4px solid #007bff;
+    }
+    
+    .cities-info h4 {
+        color: #007bff;
+        margin-top: 0;
+        margin-bottom: 8px;
+        font-size: 16px;
+    }
+    
+    .cities-list {
+        font-size: 14px;
+        color: #333;
+        line-height: 1.4;
+    }
+    
+    /* Rota bilgilendirme paneli için stiller */
+    .directions-panel-section {
+        margin-bottom: 15px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 10px;
+    }
+  </style>
+  
+  <!-- JavaScript dosyalarını yükle (sıralama önemli) -->
+  <script src="{% static 'js/MapManager.js' %}" defer></script>
+  <script src="{% static 'js/RouteManager.js' %}" defer></script>
+  <script src="{% static 'js/ChargingStationManager.js' %}" defer></script>
+  <script src="{% static 'js/WeatherManager.js' %}" defer></script>
+  <script src="{% static 'js/RestaurantManager.js' %}" defer></script>
+  <script src="{% static 'js/AppManager.js' %}" defer></script>
+  <script src="{% static 'js/EventSuggestions.js' %}" defer></script>
+  
+  <!-- Google Maps API'yi yükle -->
+  <script>
+    function initMap() {
+      // Google Maps API'nin tamamen yüklendiğinden emin ol
+      if (typeof google !== 'undefined' && google.maps) {
+        window.app = new AppManager();
+      } else {
+        console.error('Google Maps API yüklenemedi');
+      }
+    }
+    
+    // Hata durumunda callback
+    function gm_authFailure() {
+      console.error('Google Maps API kimlik doğrulama hatası - API key kontrol edin');
+      alert('Google Maps API kimlik doğrulama hatası. API anahtarınızı kontrol edin.');
+    }
+  </script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key={{ GOOGLE_PLACES_API_KEY }}&libraries=places,geometry,geocoding&callback=initMap&loading=async">
+    </script>
+</head>
+<body>
+    {% include 'harita/navbar.html' %}
+    <div class="container">
+        <div id="map-section" class="map-with-panel">
+            <div id="map"></div>
+        </div>
+        
+        <div id="controls-section">
+            <div id="controls">
+                <h3 class="section-title"><i class="fas fa-route"></i> Rota Planlama</h3>
+                <div class="search-container">
+                    <div class="input-group">
+                        <span class="input-icon"><i class="fas fa-map-marker-alt"></i></span>
+                        <input id="searchBox1" class="controls" type="text" placeholder="Başlangıç Konumu">
+                    </div>
+                    <div class="input-group">
+                        <span class="input-icon"><i class="fas fa-flag-checkered"></i></span>
+                        <input id="searchBox2" class="controls" type="text" placeholder="Hedef Konumu">
+                    </div>
+                </div>
+                
+                <div class="button-group">
+                    <button id="routeButton" class="primary-button btn-click-effect">
+                        <i class="fas fa-route"></i> Rota Oluştur
+                    </button>
+                    <button id="clearButton" class="secondary-button btn-click-effect">
+                        <i class="fas fa-trash-alt"></i> Temizle
+                    </button>
+                </div>
+                
+                <div class="button-group">
+                    <button id="getLocationButton" class="primary-button btn-click-effect">
+                        <i class="fas fa-location-arrow"></i> Konumu Al
+                    </button>
+                    <button id="trafficButton" class="secondary-button btn-click-effect">
+                        <i class="fas fa-traffic-light"></i> Trafik Göster/Gizle
+                    </button>
+                </div>
+                
+                <div class="button-group">
+                    <button id="suggestActivitiesButton" class="primary-button full-width btn-click-effect" style="display: none;">
+                        <i class="fas fa-lightbulb"></i> Etkinlik Öner
+                    </button>
+                </div>
+                
+                <div class="charging-section">
+                    <h3 class="section-title"><i class="fas fa-charging-station"></i> Şarj İstasyonları</h3>
+                    <button id="toggleChargingStationsButton" class="primary-button full-width btn-click-effect">
+                        <i class="fas fa-bolt"></i> Şarj İstasyonlarını Göster
+                    </button>
+                    <div class="battery-input">
+                        <label for="batteryLevel"><i class="fas fa-battery-half"></i> Şarj Seviyesi (%)</label>
+                        <input type="number" 
+                               id="batteryLevel" 
+                               min="0" 
+                               max="100" 
+                               value="100" 
+                               required 
+                               oninput="this.value = Math.min(Math.max(this.value, 0), 100)">
+                    </div>
+                </div>
+            </div>
+  
+            <div id="legend">
+                <h3 class="section-title"><i class="fas fa-info-circle"></i> Harita Bilgileri</h3>
+                <div class="legend-item">
+                    <img src="https://maps.google.com/mapfiles/ms/icons/green-dot.png" alt="Şarj İstasyonu">
+                    <span>Şarj İstasyonları</span>
+                </div>
+                <div class="legend-item">
+                    <img src="https://maps.google.com/mapfiles/ms/icons/blue-dot.png" alt="Restoran">
+                    <span>Restoranlar</span>
+                </div>
+            </div>
+  
+            <div id="directionsPanel">
+                <h3 class="section-title"><i class="fas fa-directions"></i> Rota Bilgileri</h3>
+                <div class="directions-summary">
+                    <!-- Rota özeti buraya gelecek -->
+                </div>
+                <div class="directions-content">
+                    <!-- Rota bilgileri burada görüntülenecek -->
+                </div>
+                <div class="cities-info">
+                    <h4><i class="fas fa-city"></i> Geçilen Şehirler</h4>
+                    <div class="cities-list">
+                        <!-- Geçilen şehirler listesi buraya gelecek -->
+                    </div>
+                </div>
+            </div>
+            
+            <div id="weatherInfo" style="display: none;">
+                <!-- Hava durumu bilgileri burada görüntülenecek -->
+            </div>
+  
+            <!-- Info Window Template'leri -->
+            <template id="station-info-template">
+                <div class="info-window-content station-info-window">
+                    <div class="info-header">
+                        <h3 class="station-name"></h3>
+                        <button class="close-button" onclick="closeInfoWindow()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="info-content">
+                        <p class="station-vicinity"></p>
+                        <p class="station-rating"></p>
+                        <div class="info-buttons">
+                            <button class="add-waypoint-btn btn-click-effect"><i class="fas fa-plus-circle"></i> Durak Ekle</button>
+                            <button class="show-restaurants-btn btn-click-effect"><i class="fas fa-utensils"></i> Restoranları Göster</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+  
+            <template id="restaurant-info-template">
+                <div class="info-window-content restaurant-info-window">
+                    <div class="info-header">
+                        <h3 class="restaurant-name"></h3>
+                        <button class="close-button" onclick="closeInfoWindow()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="info-content">
+                        <p class="restaurant-vicinity"></p>
+                        <div class="info-buttons">
+                            <button class="create-route-btn btn-click-effect"><i class="fas fa-route"></i> Rota Oluştur</button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+  
+    <!-- Etkinlik Önerileri Paneli -->
+    <div id="eventSuggestionsPanel" class="event-suggestions-panel">
+        <div class="event-panel-header">
+            <h3><i class="fas fa-lightbulb"></i> Etkinlik Önerileri</h3>
+            <button id="closeEventPanel" class="event-panel-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="event-panel-content">
+            <div id="eventSuggestionsList"></div>
+        </div>
+    </div>
+  </body>
+  </html>

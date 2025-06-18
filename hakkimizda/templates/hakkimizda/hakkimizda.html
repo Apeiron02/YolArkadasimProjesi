@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Yol Arkadaşım - Hakkımızda</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            color: var(--primary-blue);
+            margin-bottom: 20px;
+        }
+
+        .content {
+            background: var(--panel-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 225, 255, 0.2);
+        }
+
+        .content p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: var(--light-text);
+        }
+
+        .nav-link {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: var(--gradient-primary);
+            color: var(--light-text);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 225, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'harita:harita_view' %}" class="nav-link">Ana Sayfa</a>
+    <div class="container">
+        <div class="header">
+            <h1>Biz Kimiz?</h1>
+        </div>
+        <div class="content">
+            <p>"Yol Arkadaşım" projesi, elektrikli araç kullanıcılarına seyahat sırasında veya öncesinde güzergah üzerindeki en yakın şarj istasyonlarını harita üzerinde gösterir. Hava durumu, trafik gibi faktörlere göre aracın kalan menzilini hesaplar ve şarj süresince yakınlardaki eğlence, konaklama, restoran gibi mekanları da kullanıcılara sunar.</p>
+            <p>Proje, elektrikli araç sahiplerine en konforlu yolculuk deneyimini sağlamayı amaçlar.</p>
+        </div>
+    </div>
+</body>
+</html>

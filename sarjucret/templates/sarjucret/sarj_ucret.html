@@ -1,0 +1,248 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Şarj Ücreti Hesaplama</title>
+    <link rel="stylesheet" href="{% static 'css/sarjucret.css' %}">
+    <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
+    <link rel="stylesheet" href="{% static 'css/common.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    {% include 'sarjucret/navbar.html' %}
+    
+    <div class="container">
+        <h1>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            Şarj Ücreti Hesaplama
+        </h1>
+        
+        <div class="content-card">
+            <div class="card-body">
+                <h2>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                        <rect x="9" y="9" width="6" height="6"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="4" y1="10" x2="20" y2="10"></line>
+                        <line x1="10" y1="16" x2="14" y2="16"></line>
+                    </svg>
+                    Elektrikli Araç Şarj Ücreti Hesaplama
+                </h2>
+                
+                <div class="info-box">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                    </svg>
+                    <p>Elektrikli aracınızın şarj maliyetini hesaplamak için batarya kapasitesi, mevcut şarj durumu ve elektrik fiyatını kullanarak hesaplama yapabilirsiniz.</p>
+                </div>
+                
+                <form method="POST">
+                    <div class="form-container">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="aracmodeli">Araç Modeli:</label>
+                            <select id="aracmodeli" name="aracmodeli" required>
+                                <option value="">Araç Seçiniz</option>
+                                {% for car in electric_cars %}
+                                <option value="{{ car.id }}" 
+                                        data-kwh="{{ car.kwh|default:'' }}" 
+                                        data-range="{{ car.average_range|default:'' }}"
+                                        {% if user_car_preference and user_car_preference.selected_car.id == car.id %}selected{% endif %}>
+                                    {{ car.car_name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-hint">Araç seçildiğinde batarya kapasitesi otomatik doldurulacaktır.</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Batarya Kapasitesi:</label>
+                            <div class="info-container">
+                                <div class="info-header">
+                                    <span>Kapasite:</span>
+                                    <span id="bataryakapasitesi" class="info-value">
+                                        {% if user_car_preference %}
+                                            {{ user_car_preference.selected_car.kwh }} kWh
+                                        {% else %}
+                                            <span class="placeholder-text">Araç seçildiğinde görüntülenecek</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <!-- Range input grupları - split filter kullanımını kaldırıyoruz -->
+                        <!-- Mevcut şarj input -->
+                        <div class="form-group">
+                            <label for="mevcutsarj">Mevcut Şarj Seviyesi (%):</label>
+                            <div class="range-container">
+                                <div class="range-header">
+                                    <span>Mevcut Şarj:</span>
+                                    <span id="mevcutsarjValue" class="range-value">20%</span>
+                                </div>
+                                <input type="range" id="mevcutsarj" name="mevcutsarj" min="0" max="100" step="5" value="20" required>
+                                <div class="range-labels">
+                                    <span>0%</span>
+                                    <span>50%</span>
+                                    <span>100%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hedef şarj input -->
+                        <div class="form-group">
+                            <label for="hedefsarj">Hedef Şarj Seviyesi (%):</label>
+                            <div class="range-container">
+                                <div class="range-header">
+                                    <span>Hedef Şarj:</span>
+                                    <span id="hedefsarjValue" class="range-value">80%</span>
+                                </div>
+                                <input type="range" id="hedefsarj" name="hedefsarj" min="0" max="100" step="5" value="80" required>
+                                <div class="range-labels">
+                                    <span>0%</span>
+                                    <span>50%</span>
+                                    <span>100%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Şarj İstasyonu ve Soket Tipi Seçiniz</label>
+                            <div class="sarj-istasyonu-secim">
+                                <div class="provider-tabs">
+                                    <div class="provider-tab active" data-provider="zes">Zes Fiyatları</div>
+                                    <div class="provider-tab" data-provider="trugo">Trugo Fiyatları</div>
+                                    <div class="provider-tab" data-provider="voltrun">Voltrun Fiyatları</div>
+                                    <div class="provider-tab" data-provider="esarj">Esarj Fiyatları</div>
+                                </div>
+                                
+                                <div class="provider-content">
+                                    <input type="hidden" id="elektrikfiyati" value="8.99">
+                                    
+                                    <!-- Şarj istasyonu panelleri -->
+                                    <div class="provider-panel active" id="zesFiyatPanel" data-provider="zes">
+                                        <div class="fiyat-listesi">
+                                            {% if zes_fiyatlari %}
+                                                {% for fiyat in zes_fiyatlari %}
+                                                <div class="fiyat-item" data-value="{{ fiyat.fiyat_degeri }}" data-tip="{{ fiyat.sarj_tipi }}">
+                                                    <span class="fiyat-tip">{% if fiyat.membership_type %}{{ fiyat.membership_type }} - {% endif %}{{ fiyat.sarj_tipi }}</span>
+                                                    <span class="fiyat-deger">{{ fiyat.fiyat_metni }}</span>
+                                                </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <div class="fiyat-item">
+                                                    <span class="fiyat-tip">Fiyat bilgisi bulunamadı</span>
+                                                    <span class="fiyat-deger">-</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="provider-panel" id="trugoFiyatPanel" data-provider="trugo">
+                                        <div class="fiyat-listesi">
+                                            {% if trugo_fiyatlari %}
+                                                {% for fiyat in trugo_fiyatlari %}
+                                                <div class="fiyat-item" data-value="{{ fiyat.fiyat_degeri }}" data-tip="{{ fiyat.sarj_tipi }}">
+                                                    <span class="fiyat-tip">{% if fiyat.membership_type %}{{ fiyat.membership_type }} - {% endif %}{{ fiyat.sarj_tipi }}</span>
+                                                    <span class="fiyat-deger">{{ fiyat.fiyat_metni }}</span>
+                                                </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <div class="fiyat-item">
+                                                    <span class="fiyat-tip">Fiyat bilgisi bulunamadı</span>
+                                                    <span class="fiyat-deger">-</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="provider-panel" id="voltrunFiyatPanel" data-provider="voltrun">
+                                        <div class="fiyat-listesi">
+                                            {% if voltrun_fiyatlari %}
+                                                {% for fiyat in voltrun_fiyatlari %}
+                                                <div class="fiyat-item" data-value="{{ fiyat.fiyat_degeri }}" data-tip="{{ fiyat.sarj_tipi }}">
+                                                    <span class="fiyat-tip">{% if fiyat.membership_type %}{{ fiyat.membership_type }} - {% endif %}{{ fiyat.sarj_tipi }}</span>
+                                                    <span class="fiyat-deger">{{ fiyat.fiyat_metni }}</span>
+                                                </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <div class="fiyat-item">
+                                                    <span class="fiyat-tip">Fiyat bilgisi bulunamadı</span>
+                                                    <span class="fiyat-deger">-</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="provider-panel" id="esarjFiyatPanel" data-provider="esarj">
+                                        <div class="fiyat-listesi">
+                                            {% if esarj_fiyatlari %}
+                                                {% for fiyat in esarj_fiyatlari %}
+                                                <div class="fiyat-item" data-value="{{ fiyat.fiyat_degeri }}" data-tip="{{ fiyat.sarj_tipi }}">
+                                                    <span class="fiyat-tip">{% if fiyat.membership_type %}{{ fiyat.membership_type }} - {% endif %}{{ fiyat.sarj_tipi }}</span>
+                                                    <span class="fiyat-deger">{{ fiyat.fiyat_metni }}</span>
+                                                </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <div class="fiyat-item">
+                                                    <span class="fiyat-tip">Fiyat bilgisi bulunamadı</span>
+                                                    <span class="fiyat-deger">-</span>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" id="hesaplaButton" class="btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                                <rect x="9" y="9" width="6" height="6"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="4" y1="10" x2="20" y2="10"></line>
+                                <line x1="10" y1="16" x2="14" y2="16"></line>
+                            </svg>
+                            Hesapla
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Sonuç bölümü -->
+                <div class="result-section">
+                    <h3>Hesaplama Sonucu</h3>
+                    
+                    <div class="arac-sarj-bilgileri">
+                        <div class="arac-bilgi-karti">
+                            <h4>Şarj Bilgileri</h4>
+                            <p><span class="etiket">Şarj Edilecek Enerji:</span> <span id="sarjenerji">-</span> kWh</p>
+                            <p><span class="etiket">Toplam Şarj Ücreti:</span> <span id="sonuc">-</span> TL</p>
+                        </div>
+                        
+                        <div class="arac-bilgi-karti">
+                            <h4>Maliyet Analizi</h4>
+                            <p><span class="etiket">Birim Fiyat:</span> <span id="birimfiyat">-</span> TL/kWh</p>
+                            <p><span class="etiket">Km Başına Maliyet:</span> <span id="kmmaliyet">-</span> TL/km</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer>
+        <p>© 2023 Yol Arkadaşım - Tüm Hakları Saklıdır</p>
+    </footer>
+    
+    <script src="{% static 'js/sarjucret.js' %}"></script>
+</body>
+</html>
