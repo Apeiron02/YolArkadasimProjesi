@@ -20,34 +20,40 @@ Yol Arkadaşım, elektrikli araç kullanıcıları için özel olarak tasarlanm�
 
 ## 🖼️ Ekran Görüntüleri
 
+### Giriş Sayfası
+![Giriş Sayfası](screens/GrisSayfası.png)
+*Kullanıcı giriş ekranı*
+
 ### Harita Sayfası
 ![Harita Sayfası 1](screens/HaritaSayfası_1.png)
-*Harita üzerinde rota planlama ve şarj istasyonu görüntüleme*
+*Harita sayfasının açılış ekranı*
 
 ![Harita Sayfası 2](screens/HaritaSayfası_2.png)
-*Rota detayları ve menzil bilgisi görüntüleme*
+*Oluşturulan rota sonucunda yetersiz menzil sonucu şarj istasyonu önerisi*
 
 ![Harita Sayfası 3](screens/HaritaSayfası_3.png)
-*Şarj istasyonu detayları ve kullanılabilirlik durumu*
+*Oluşturulan rota üzerinde ki şehirlerde mola noktası önerileri*
 
 ![Harita Sayfası 4](screens/HaritaSayfası_4.png)
-*Alternatif rota seçenekleri*
+*Oluşturulan rotanın trafik durumu ile gösterimi*
 
 ![Harita Sayfası 5](screens/HaritaSayfası_5.png)
-*Şarj istasyonu filtreleme ve arama*
+*Seçilen nokta etrafında ki şarj istasyonlarının gösterimi*
 
 ![Harita Sayfası 6](screens/HaritaSayfası_6.png)
-*Rota özeti ve tahmini varış süresi*
+*Seçilen şarj istasyonunun etrafında bulunan restorantların gösterimi*
+
+### Şarj Maliyet Sayfası
+
+![Şarj Ücreti](screens/SarjUcretiSayfası.png)
+*Şarj ücreti hesaplama ve ödeme seçenekleri*
+
 
 ### Kullanıcı Arayüzü
 ![Kullanıcı Bilgileri](screens/KullanıcıBilgileriSayfası.png)
 *Kullanıcı profil ve tercih yönetimi*
 
-![Şarj Ücreti](screens/SarjUcretiSayfası.png)
-*Şarj ücreti hesaplama ve ödeme seçenekleri*
 
-![Giriş Sayfası](screens/GrisSayfası.png)
-*Kullanıcı giriş ve kayıt ekranı*
 
 ## 🚀 Kurulum
 
